@@ -20,8 +20,9 @@ class EPlusRunner:
         self.epw_path = epw_path
         
         self.sensor_handles = {}
+        self.actuator_handles = {}
         
-        # Register the callback to read sensors
+        # Register the callback to read sensors and apply actuators
         self.api.runtime.callback_begin_zone_timestep_after_init_heat_balance(
             self.state, self._begin_zone_timestep_callback
         )
@@ -30,20 +31,37 @@ class EPlusRunner:
         if not self.api.exchange.api_data_fully_ready(state):
             return
             
-        # Dynamically get variable handles. 
-        # Note: 'Core_Zone' is just an example key; it depends on the specific IDF.
+        # 1. Get sensor handles
         if 'zone_mean_temp' not in self.sensor_handles:
             handle = self.api.exchange.get_variable_handle(
                 state, "Zone Mean Air Temperature", "Core_Zone"
             )
             if handle > 0:
                 self.sensor_handles['zone_mean_temp'] = handle
+                
+        # 2. Get actuator handles
+        if 'cooling_setpoint' not in self.actuator_handles:
+            # Note: EMS actuators must be explicitly enabled in the IDF.
+            handle = self.api.exchange.get_actuator_handle(
+                state, "Zone Temperature Control", "Cooling Setpoint", "Core_Zone"
+            )
+            if handle > 0:
+                self.actuator_handles['cooling_setpoint'] = handle
         
-        # Read and optionally print sensor value
-        if 'zone_mean_temp' in self.sensor_handles:
-            val = self.api.exchange.get_variable_value(state, self.sensor_handles['zone_mean_temp'])
-            # Uncomment to verify it's reading at each timestep:
-            # print(f"Core Zone Mean Temp: {val:.2f} C")
+        # 3. Read sensor and apply a "dumb rule" for testing (Step 2 requirement)
+        if 'zone_mean_temp' in self.sensor_handles and 'cooling_setpoint' in self.actuator_handles:
+            temp = self.api.exchange.get_variable_value(state, self.sensor_handles['zone_mean_temp'])
+            
+            # Dumb rule: if temp > 25, drop cooling setpoint by 1 to 24
+            if temp > 25.0:
+                new_setpoint = 24.0
+                self.api.exchange.set_actuator_value(
+                    state, self.actuator_handles['cooling_setpoint'], new_setpoint
+                )
+            else:
+                self.api.exchange.set_actuator_value(
+                    state, self.actuator_handles['cooling_setpoint'], 26.0
+                )
             
     def run(self):
         print(f"Starting EnergyPlus simulation...")
@@ -71,14 +89,15 @@ class EPlusRunner:
 
 if __name__ == "__main__":
     base_dir = os.path.dirname(os.path.dirname(__file__))
-    idf = os.path.join(base_dir, "models", "baseline.idf")
+    # Switch to the agent_model for step 2
+    idf = os.path.join(base_dir, "models", "agent_model.idf")
     epw = os.path.join(base_dir, "models", "weather.epw")
     
     # Check if the dummy files are still there instead of real ones
     with open(idf, 'r') as f:
         content = f.read()
         if content.startswith('! Please copy'):
-            print("ERROR: Please replace models/baseline.idf with a real EnergyPlus IDF file.")
+            print("ERROR: Please replace models/agent_model.idf with a real EnergyPlus IDF file containing EMS actuators.")
             sys.exit(1)
             
     runner = EPlusRunner(idf, epw)

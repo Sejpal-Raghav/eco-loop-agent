@@ -1,0 +1,2 @@
+! Please copy a DOE reference small/medium office IDF here and add EMS Actuators.
+! The script expects an EMS Actuator for "Zone Temperature Control" -> "Cooling Setpoint" on "Core_Zone".
