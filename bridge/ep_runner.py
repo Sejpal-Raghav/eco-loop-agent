@@ -12,8 +12,10 @@ except ImportError:
     print(f"Failed to import pyenergyplus. Ensure EnergyPlus is installed at {EPLUS_DIR}")
     sys.exit(1)
 
+import json
 from bridge.state_compressor import StateCompressor
 from bridge.logger import DecisionLogger
+from bridge.guardrails import ActionGuardrail
 
 class EPlusRunner:
     def __init__(self, idf_path, epw_path):
@@ -27,6 +29,7 @@ class EPlusRunner:
         
         self.compressor = StateCompressor(interval_minutes=30)
         self.logger = DecisionLogger(os.path.join(os.path.dirname(os.path.dirname(__file__)), "logs", "decisions.jsonl"))
+        self.guardrail = ActionGuardrail()
         
         # Request more sensors for the state summary
         self.sensor_names = {
@@ -97,18 +100,41 @@ class EPlusRunner:
         if self.compressor.should_compress(current_sim_minutes):
             state_summary = self.compressor.compress(current_sim_minutes)
             if state_summary:
-                # Apply dumb rule on a 30-minute cadence instead of every timestep
-                temp = zone_states[0]['mean_air_temp_c']
-                if temp > 25.0 and 'cooling_setpoint' in self.actuator_handles:
-                    new_setpoint = 24.0
-                    self.api.exchange.set_actuator_value(state, self.actuator_handles['cooling_setpoint'], new_setpoint)
-                    
-                    self.logger.log(
-                        state=state_summary,
-                        proposed_action={"cooling_setpoint": new_setpoint},
-                        clamped_action={"cooling_setpoint": new_setpoint},
-                        reason="Dumb rule triggered: temp > 25.0"
-                    )
+                # Write out the state so the MCP server can serve it to the agent
+                state_file_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "logs", "latest_state.json")
+                with open(state_file_path, "w") as f:
+                    json.dump(state_summary, f)
+                
+                # Check if the MCP server/LLM agent has proposed an action
+                action_file_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "logs", "pending_action.json")
+                if os.path.exists(action_file_path):
+                    try:
+                        with open(action_file_path, "r") as f:
+                            proposed_action = json.load(f)
+                        os.remove(action_file_path) # Consume the action
+                        
+                        # Guardrails
+                        clamped_action, was_clamped, reason = self.guardrail.validate_and_clamp(proposed_action, state_summary)
+                        
+                        # Apply to EnergyPlus Actuators
+                        if clamped_action.get("type") == "setpoint":
+                            heat = clamped_action["heating_c"]
+                            cool = clamped_action["cooling_c"]
+                            
+                            if 'heating_setpoint' in self.actuator_handles:
+                                self.api.exchange.set_actuator_value(state, self.actuator_handles['heating_setpoint'], heat)
+                            if 'cooling_setpoint' in self.actuator_handles:
+                                self.api.exchange.set_actuator_value(state, self.actuator_handles['cooling_setpoint'], cool)
+                                
+                        # Log it
+                        self.logger.log(
+                            state=state_summary,
+                            proposed_action=proposed_action,
+                            clamped_action=clamped_action,
+                            reason=reason
+                        )
+                    except Exception as e:
+                        print(f"Error applying action: {e}")
                 
     def run(self):
         print(f"Starting EnergyPlus simulation...")
