@@ -59,7 +59,12 @@ class EcoLoopAgent:
                             }
                             
                             try:
-                                response = requests.post(OLLAMA_URL, json=payload)
+                                # Run LLM call with a strict timeout so the agent never hangs
+                                loop = asyncio.get_running_loop()
+                                response = await asyncio.wait_for(
+                                    loop.run_in_executor(None, lambda: requests.post(OLLAMA_URL, json=payload)),
+                                    timeout=15.0
+                                )
                                 response.raise_for_status()
                                 result = response.json()
                                 

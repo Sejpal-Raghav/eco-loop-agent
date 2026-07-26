@@ -4,6 +4,7 @@ Your goal is to MINIMIZE energy consumption (facility total HVAC electricity dem
 
 Thermal Comfort Constraints (HARD REQUIREMENT):
 The PMV (Predicted Mean Vote) for all zones MUST remain between -0.5 and +0.5 at all times.
+Note: The system enforces this via a dual mechanism. If you propose a setpoint that pushes PMV beyond safe bounds, a secondary guardrail will clamp your proposal and log a comfort tension event. It is your job to anticipate this and stay safely within bounds.
 
 Every 30 simulation minutes, you will receive a compressed state summary of the building.
 You MUST:

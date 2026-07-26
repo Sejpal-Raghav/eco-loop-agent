@@ -1,5 +1,7 @@
 import sys
 import os
+import json
+import time
 
 # Adjust EPLUS_DIR to match your EnergyPlus installation path on Windows.
 EPLUS_DIR = r"C:\EnergyPlusV24-1-0" 
@@ -12,10 +14,15 @@ except ImportError:
     print(f"Failed to import pyenergyplus. Ensure EnergyPlus is installed at {EPLUS_DIR}")
     sys.exit(1)
 
-import json
 from bridge.state_compressor import StateCompressor
 from bridge.logger import DecisionLogger
 from bridge.guardrails import ActionGuardrail
+
+class EPState:
+    IDLE = "idle"
+    RUNNING = "running"
+    ERROR = "error"
+    STOPPED = "stopped"
 
 class EPlusRunner:
     def __init__(self, idf_path, epw_path):
@@ -28,10 +35,14 @@ class EPlusRunner:
         self.actuator_handles = {}
         
         self.compressor = StateCompressor(interval_minutes=30)
-        self.logger = DecisionLogger(os.path.join(os.path.dirname(os.path.dirname(__file__)), "logs", "decisions.jsonl"))
+        logs_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "logs")
+        self.logger = DecisionLogger(os.path.join(logs_dir, "decisions.jsonl"))
+        self.error_log_path = os.path.join(logs_dir, "errors.jsonl")
         self.guardrail = ActionGuardrail()
         
-        # Request more sensors for the state summary
+        self.lifecycle_state = EPState.IDLE
+        self.last_action_time = None
+        
         self.sensor_names = {
             "zone_mean_temp": ("Zone Mean Air Temperature", "Core_Zone"),
             "pmv": ("Zone Thermal Comfort Fanger Model PMV", "People Core_Zone"),
@@ -41,23 +52,29 @@ class EPlusRunner:
             "outdoor_temp": ("Site Outdoor Air Drybulb Temperature", "Environment")
         }
         
-        # Register the callback to read sensors and apply actuators
         self.api.runtime.callback_begin_zone_timestep_after_init_heat_balance(
             self.state, self._begin_zone_timestep_callback
         )
+        
+    def _log_error(self, error_type, message):
+        record = {
+            "timestamp": time.time(),
+            "type": error_type,
+            "message": message
+        }
+        with open(self.error_log_path, 'a') as f:
+            f.write(json.dumps(record) + '\n')
         
     def _begin_zone_timestep_callback(self, state):
         if not self.api.exchange.api_data_fully_ready(state):
             return
             
-        # 1. Get sensor handles dynamically
         for key, (var_name, var_key) in self.sensor_names.items():
             if key not in self.sensor_handles:
                 handle = self.api.exchange.get_variable_handle(state, var_name, var_key)
                 if handle > 0:
                     self.sensor_handles[key] = handle
                     
-        # 2. Get actuator handles
         if 'cooling_setpoint' not in self.actuator_handles:
             handle = self.api.exchange.get_actuator_handle(state, "Zone Temperature Control", "Cooling Setpoint", "Core_Zone")
             if handle > 0:
@@ -68,7 +85,6 @@ class EPlusRunner:
             if handle > 0:
                 self.actuator_handles['heating_setpoint'] = handle
 
-        # 3. Read basic time
         year = self.api.exchange.year(state)
         month = self.api.exchange.month(state)
         day = self.api.exchange.day_of_month(state)
@@ -82,41 +98,36 @@ class EPlusRunner:
             return self.api.exchange.get_variable_value(state, self.sensor_handles[k]) if k in self.sensor_handles else 0.0
 
         outdoor_temp = get_val('outdoor_temp')
-        facility_kw = get_val('facility_kw') / 1000.0 # Convert W to kW
+        facility_kw = get_val('facility_kw') / 1000.0
+        pmv_val = get_val('pmv')
         
         zone_states = [{
             "name": "Core_Zone",
             "mean_air_temp_c": round(get_val('zone_mean_temp'), 2),
-            "pmv": round(get_val('pmv'), 2),
-            "heating_setpoint_c": 21.0, # Placeholder until we read/write real setpoints properly
-            "cooling_setpoint_c": 24.0, # Placeholder
+            "pmv": round(pmv_val, 2),
+            "heating_setpoint_c": 21.0,
+            "cooling_setpoint_c": 24.0,
             "hvac_electricity_kw": round((get_val('heating_kw') + get_val('cooling_kw')) / 1000.0, 2)
         }]
         
-        # Add reading to compressor
         self.compressor.add_reading(sim_time_str, outdoor_temp, zone_states, facility_kw)
         
-        # Check if we should compress and act (once every N minutes)
         if self.compressor.should_compress(current_sim_minutes):
             state_summary = self.compressor.compress(current_sim_minutes)
             if state_summary:
-                # Write out the state so the MCP server can serve it to the agent
                 state_file_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "logs", "latest_state.json")
                 with open(state_file_path, "w") as f:
                     json.dump(state_summary, f)
                 
-                # Check if the MCP server/LLM agent has proposed an action
                 action_file_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "logs", "pending_action.json")
                 if os.path.exists(action_file_path):
                     try:
                         with open(action_file_path, "r") as f:
                             proposed_action = json.load(f)
-                        os.remove(action_file_path) # Consume the action
+                        os.remove(action_file_path)
                         
-                        # Guardrails
                         clamped_action, was_clamped, reason = self.guardrail.validate_and_clamp(proposed_action, state_summary)
                         
-                        # Apply to EnergyPlus Actuators
                         if clamped_action.get("type") == "setpoint":
                             heat = clamped_action["heating_c"]
                             cool = clamped_action["cooling_c"]
@@ -126,52 +137,60 @@ class EPlusRunner:
                             if 'cooling_setpoint' in self.actuator_handles:
                                 self.api.exchange.set_actuator_value(state, self.actuator_handles['cooling_setpoint'], cool)
                                 
-                        # Log it
                         self.logger.log(
                             state=state_summary,
                             proposed_action=proposed_action,
                             clamped_action=clamped_action,
                             reason=reason
                         )
+                        self.last_action_time = current_sim_minutes
                     except Exception as e:
-                        print(f"Error applying action: {e}")
+                        self._log_error("action_parse_error", str(e))
+                else:
+                    if self.last_action_time is not None:
+                        elapsed = current_sim_minutes - self.last_action_time
+                        if elapsed > self.compressor.interval_minutes * 2:
+                            self._log_error("agent_timeout", "No action received from LLM for multiple cycles. Holding previous setpoints.")
                 
     def run(self):
-        print(f"Starting EnergyPlus simulation...")
-        print(f"IDF: {self.idf_path}")
-        print(f"EPW: {self.epw_path}")
+        self.lifecycle_state = EPState.RUNNING
+        print(f"Starting EnergyPlus simulation in {self.lifecycle_state} state...")
         
         out_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "analysis", "outputs")
         os.makedirs(out_dir, exist_ok=True)
         
-        result = self.api.runtime.run_energyplus(
-            self.state, 
-            [
-                '-w', self.epw_path,
-                '-d', out_dir,
-                self.idf_path
-            ]
-        )
-        
-        if result == 0:
-            print("Simulation completed successfully.")
-        else:
-            print(f"Simulation failed with code {result}.")
+        try:
+            result = self.api.runtime.run_energyplus(
+                self.state, 
+                [
+                    '-w', self.epw_path,
+                    '-d', out_dir,
+                    self.idf_path
+                ]
+            )
             
-        self.api.state_manager.delete_state(self.state)
+            if result == 0:
+                self.lifecycle_state = EPState.STOPPED
+                print("Simulation completed successfully.")
+            else:
+                self.lifecycle_state = EPState.ERROR
+                print(f"Simulation failed with code {result}.")
+                self._log_error("sim_failure", f"EnergyPlus exited with code {result}")
+        except Exception as e:
+            self.lifecycle_state = EPState.ERROR
+            self._log_error("fatal_exception", str(e))
+        finally:
+            self.api.state_manager.delete_state(self.state)
 
 if __name__ == "__main__":
-    # Ensure bridge is in PYTHONPATH
     sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-    
     base_dir = os.path.dirname(os.path.dirname(__file__))
     idf = os.path.join(base_dir, "models", "agent_model.idf")
     epw = os.path.join(base_dir, "models", "weather.epw")
     
     with open(idf, 'r') as f:
-        content = f.read()
-        if content.startswith('! Please copy'):
-            print("ERROR: Please replace models/agent_model.idf with a real EnergyPlus IDF file containing EMS actuators.")
+        if f.read().startswith('! Please copy'):
+            print("ERROR: Please replace models/agent_model.idf with a real EnergyPlus IDF file.")
             sys.exit(1)
             
     runner = EPlusRunner(idf, epw)

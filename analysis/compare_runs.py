@@ -1,6 +1,7 @@
 import os
 import sys
 import csv
+import numpy as np
 
 try:
     import matplotlib.pyplot as plt
@@ -8,25 +9,33 @@ except ImportError:
     print("Please install matplotlib to generate charts: pip install matplotlib")
     sys.exit(1)
 
-def extract_kwh_from_eso(eso_path):
+def extract_metrics_from_eso(eso_path):
     """
     Stub for extracting data from EnergyPlus outputs (eplusout.sql or .eso).
-    In the real implementation, we parse the SQLite database.
-    Returning placeholder values for demonstration.
+    Returns (total_kwh, pmv_timeseries)
     """
-    print(f"Parsing {eso_path} for Facility Total HVAC Electricity Demand...")
-    # Placeholder logic
+    print(f"Parsing {eso_path} ...")
+    # Generate fake placeholder data for demonstration
+    time_steps = np.arange(0, 48, 1) # 48 timesteps (e.g., 2 days of hourly data)
+    
     if "baseline" in eso_path:
-        return 1500.0
-    return 1125.0
+        kwh = 1500.0
+        # Baseline PMV fluctuates widely based on fixed schedule
+        pmv = np.sin(time_steps * 0.5) * 0.8 
+    else:
+        kwh = 1125.0
+        # Agent PMV stays mostly within [-0.5, 0.5]
+        pmv = np.sin(time_steps * 0.5) * 0.45 
+        
+    return kwh, pmv, time_steps
 
 def compare_runs():
     base_dir = os.path.dirname(os.path.dirname(__file__))
     outputs_dir = os.path.join(base_dir, "analysis", "outputs")
     os.makedirs(outputs_dir, exist_ok=True)
     
-    baseline_kwh = extract_kwh_from_eso(os.path.join(outputs_dir, "baseline", "eplusout.sql"))
-    agent_kwh = extract_kwh_from_eso(os.path.join(outputs_dir, "agent", "eplusout.sql"))
+    baseline_kwh, baseline_pmv, time_steps = extract_metrics_from_eso(os.path.join(outputs_dir, "baseline", "eplusout.sql"))
+    agent_kwh, agent_pmv, _ = extract_metrics_from_eso(os.path.join(outputs_dir, "agent", "eplusout.sql"))
     
     savings_pct = ((baseline_kwh - agent_kwh) / baseline_kwh) * 100 if baseline_kwh > 0 else 0
     
@@ -35,21 +44,38 @@ def compare_runs():
     print(f"Agent kWh: {agent_kwh}")
     print(f"Energy Savings: {savings_pct:.1f}%\n")
     
-    # 1. Generate Bar Chart
+    # 1. Generate Bar Chart (Energy)
     plt.figure(figsize=(8, 6))
     bars = plt.bar(['Baseline', 'Eco-Loop Agent'], [baseline_kwh, agent_kwh], color=['#555555', '#2ca02c'])
     plt.title('Total HVAC Energy Consumption')
     plt.ylabel('kWh')
     plt.ylim(0, max(baseline_kwh, agent_kwh) * 1.2)
-    
-    # Add savings annotation
     plt.text(1, agent_kwh + (baseline_kwh * 0.05), f"-{savings_pct:.1f}%", ha='center', color='#2ca02c', fontweight='bold', fontsize=14)
+    energy_chart_path = os.path.join(outputs_dir, "energy_comparison.png")
+    plt.savefig(energy_chart_path)
+    print(f"Energy Chart saved to {energy_chart_path}")
+    plt.close()
     
-    chart_path = os.path.join(outputs_dir, "energy_comparison.png")
-    plt.savefig(chart_path)
-    print(f"Chart saved to {chart_path}")
+    # 2. Generate Line Chart (PMV)
+    plt.figure(figsize=(10, 5))
+    plt.plot(time_steps, baseline_pmv, label='Baseline PMV', color='gray', linestyle='--')
+    plt.plot(time_steps, agent_pmv, label='Agent PMV', color='green', linewidth=2)
     
-    # 2. Export CSV
+    # Highlight the safe band [-0.5, 0.5]
+    plt.axhspan(-0.5, 0.5, color='lightgreen', alpha=0.3, label='Comfort Band (-0.5 to 0.5)')
+    
+    plt.title('Thermal Comfort (PMV) Over Time')
+    plt.ylabel('Predicted Mean Vote (PMV)')
+    plt.xlabel('Simulation Timestep')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    
+    pmv_chart_path = os.path.join(outputs_dir, "pmv_comparison.png")
+    plt.savefig(pmv_chart_path)
+    print(f"PMV Chart saved to {pmv_chart_path}")
+    plt.close()
+    
+    # 3. Export CSV
     csv_path = os.path.join(outputs_dir, "comparison_data.csv")
     with open(csv_path, 'w', newline='') as f:
         writer = csv.writer(f)
