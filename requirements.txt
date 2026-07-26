@@ -3,3 +3,6 @@ pydantic
 matplotlib
 requests
 numpy
+pandas
+streamlit
+plotly
