@@ -1,0 +1,29 @@
+# EnergyPlus outputs
+analysis/outputs/
+models/eplus*
+models/sqlite.err
+
+# Logs
+logs/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Dummy files from testing
+*.csv
+*.sql
+*.eso
+*.rdd
+*.edd
+*.mdd
+*.mtd
+*.mtr
+*.bnd
+*.shd
+*.err
+*.audit
+*.eio
+*.end
+*.htm
