@@ -1,6 +1,8 @@
 # Eco-Loop: Autonomous Closed-Loop Building Energy Agent
 
-Eco-Loop is an advanced proof-of-concept for an autonomous, artificial intelligence-driven Building Management System (BMS). It is designed to replace traditional static scheduling with a localized Large Language Model (LLM) capable of reasoning about building physics, thermal comfort constraints, and energy consumption tradeoffs in real-time.
+**Eco-Loop** is an advanced proof-of-concept for an autonomous, artificial intelligence-driven **Building Management System (BMS)**. It is designed to replace traditional static scheduling with a localized Large Language Model (LLM) capable of reasoning about building physics, thermal comfort constraints, and energy consumption tradeoffs in real-time.
+
+**[Watch the Demo Video](https://drive.google.com/file/d/12aPcBYq61TVJfzHJzMN_OQ-evPPmDOMM/view?usp=sharing)**
 
 ## The Problem Statement
 
