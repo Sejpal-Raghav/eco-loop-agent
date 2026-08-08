@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --color-amber: #ffc65c;
+    --color-accent: #00f0ff;
     --color-text-main: #ffffff;
     --color-text-muted: rgba(255, 255, 255, 0.6);
   }
@@ -24,7 +24,7 @@
     position: fixed; top: 0; left: 0; width: 260px; height: 260px;
     margin-left: -130px; margin-top: -130px; border-radius: 50%;
     pointer-events: none; z-index: 5; opacity: 0;
-    background: radial-gradient(circle, rgba(255,198,92,0.10) 0%, rgba(255,198,92,0) 70%);
+    background: radial-gradient(circle, rgba(0,240,255,0.10) 0%, rgba(0,240,255,0) 70%);
     transition: opacity 0.4s ease;
     will-change: transform;
   }
@@ -35,7 +35,7 @@
     transition: opacity 1s ease;
   }
   #loading-veil span {
-    color: rgba(255,198,92,0.6); font-size: 0.75rem; letter-spacing: 0.3em;
+    color: rgba(0,240,255,0.6); font-size: 0.75rem; letter-spacing: 0.3em;
     text-transform: uppercase; font-weight: 300;
   }
 
@@ -62,7 +62,7 @@
     font-size: 2.5rem; margin: 0 0 0.25rem 0; font-weight: 600; letter-spacing: -0.02em; color: var(--color-text-main);
   }
   .brand .tag {
-    font-size: 0.8rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--color-amber); font-weight: 500;
+    font-size: 0.8rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--color-accent); font-weight: 500;
   }
 
   /* AUDIO CTA & PRIMARY CTA */
@@ -71,12 +71,12 @@
   }
   .primary-cta {
     display: flex; align-items: center; justify-content: center;
-    background: var(--color-amber); color: #000; text-decoration: none;
+    background: var(--color-accent); color: #000; text-decoration: none;
     font-weight: 600; padding: 0 1.5rem; border-radius: 40px; font-size: 0.95rem;
-    transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(255, 198, 92, 0.1);
+    transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0, 240, 255, 0.1);
   }
   .primary-cta:hover {
-    background: #ffdf8c; box-shadow: 0 6px 20px rgba(255, 198, 92, 0.3); transform: translateY(-1px);
+    background: #66f6ff; box-shadow: 0 6px 20px rgba(0, 240, 255, 0.3); transform: translateY(-1px);
   }
   .audio-cta {
     pointer-events: auto;
@@ -94,13 +94,13 @@
     -webkit-backdrop-filter: blur(8px);
   }
   .audio-cta:hover {
-    background: rgba(255, 198, 92, 0.08);
-    border-color: rgba(255, 198, 92, 0.3);
+    background: rgba(0, 240, 255, 0.08);
+    border-color: rgba(0, 240, 255, 0.3);
   }
   .audio-cta-icon {
     width: 36px; height: 36px;
     border-radius: 50%;
-    background: var(--color-amber);
+    background: var(--color-accent);
     display: flex; align-items: center; justify-content: center;
     color: #000;
   }
@@ -132,7 +132,7 @@
     display: flex; align-items: center; gap: 0.75rem;
   }
   .context-block h2::before {
-    content: ""; display: block; width: 16px; height: 2px; background: var(--color-amber); border-radius: 2px;
+    content: ""; display: block; width: 16px; height: 2px; background: var(--color-accent); border-radius: 2px;
   }
   .context-block.solution h2::before { background: #fff; }
 
@@ -201,8 +201,8 @@
 const CONFIG = {
   bgColor: 0x05070a,
   buildingColor: 0x11161d,
-  energyColor: new THREE.Color(0xffc65c),
-  energyColorHex: 0xffc65c,
+  energyColor: new THREE.Color(0x00f0ff),
+  energyColorHex: 0x00f0ff,
 
   buildingWidth: 8,
   buildingDepth: 8,
