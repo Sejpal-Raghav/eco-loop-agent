@@ -1,8 +1,21 @@
-# Eco-Loop: Autonomous Closed-Loop Building Energy Agent
+# Eco-Loop: Cognitive Multi-Agent Building Intelligence Platform
 
-**Eco-Loop** is an advanced proof-of-concept for an autonomous, artificial intelligence-driven **Building Management System (BMS)**. It is designed to replace traditional static scheduling with a localized Large Language Model (LLM) capable of reasoning about building physics, thermal comfort constraints, and energy consumption tradeoffs in real-time.
+**Eco-Loop** is a 5-layer cognitive architecture for autonomous building energy management. It coordinates **7 concurrent LLM agents** (Planner, 5 Zone Agents, Coordinator, Comfort Auditor) through a Model Context Protocol (MCP) server to control a physics-accurate EnergyPlus simulation in real time.
 
 **[Watch the Demo Video](https://drive.google.com/file/d/12aPcBYq61TVJfzHJzMN_OQ-evPPmDOMM/view?usp=sharing)**
+
+---
+
+## Quick Demo (No EnergyPlus Required)
+
+See the full multi-agent workflow in action with pre-generated simulation data:
+
+```bash
+python scripts/generate_demo_data.py
+```
+Then open `dashboard/index.html` in your browser. Use the timeline scrubber to step through 24 hours of agent coordination, including 3 crisis events that demonstrate each cognitive layer.
+
+---
 
 ## The Problem Statement
 
@@ -12,9 +25,16 @@ A traditional BMS is typically programmed with fixed heuristics. This approach i
 
 ## The Eco-Loop Solution
 
-Eco-Loop aims to replace this passive rule layer with a proactive, intelligent reasoning agent. By pairing a physics-accurate building simulation engine (EnergyPlus) with a local open-source Large Language Model (`qwen2.5:7b-instruct`), Eco-Loop enables the building to act as a self-correcting system.
+Eco-Loop replaces this passive rule layer with a **predictive, self-correcting multi-agent system**. The 5 cognitive layers work together:
 
-The agent continuously ingests live simulation state data, reasons about the necessary tradeoffs between occupant thermal comfort and energy expenditure, and writes control decisions directly back into the running simulation. This closed-loop process requires zero human intervention, allowing the building to adapt to shifting environmental conditions dynamically while strictly minimizing HVAC electricity consumption.
+| Layer | Agent(s) | Role |
+|---|---|---|
+| **Planning** | Forecast Planner | Reads 24-hour weather forecast and grid carbon intensity to set a building-wide strategy (e.g., "pre-cool overnight") |
+| **Reasoning** | 5 Zone Agents + Coordinator | Each zone proposes setpoints independently; the Coordinator resolves conflicts and enforces a peak demand cap |
+| **Perception** | State Compressor + Anomaly Detector | Cleans and compresses sensor data; flags impossible readings before agents see them |
+| **Memory** | Decision Store + Performance Tracker | Agents receive their last 3 decisions (and whether they were clamped) enabling true self-correction |
+| **Safety** | Comfort Auditor + Guardrail Engine | Independent watchdog that can bypass all other layers if PMV exits the [-0.5, +0.5] comfort band |
+
 
 ## Technical Architecture
 
