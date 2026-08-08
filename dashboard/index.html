@@ -3,1137 +3,243 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eco-Loop — Cognitive Building Intelligence</title>
-    <meta name="description" content="Multi-agent HVAC control powered by autonomous LLM coordination">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <title>Eco-Loop — The HVAC AI Revolution</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
 
     <style>
-      /* ─────────────────────────────────────────────────
-         DESIGN SYSTEM — TOKENS
-      ───────────────────────────────────────────────── */
-      :root {
-        --bg-page:      #0D0E0E;
-        --bg-raised:    #151616;
-        --bg-elevated:  #181919;
-        --bg-overlay:   #1B1C1C;
-        --bg-mono:      #101111;
+        :root {
+            --bg-page:      #0D0E0E;
+            --text-primary:   #F4F1ED;
+            --text-secondary: #C3C0B8;
+            --text-muted:     #8C8982;
+            --accent:         #D4CFC6;
+            --accent-glow:    #C8B880;
+            --font: 'Inter', system-ui, -apple-system, sans-serif;
+        }
 
-        --border-subtle:  #242525;
-        --border-default: #292A2A;
-        --border-strong:  #303131;
-        --border-active:  #4A4C4C;
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: var(--font);
+            background: var(--bg-page);
+            color: var(--text-secondary);
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-        --text-primary:   #F4F1ED;
-        --text-secondary: #C3C0B8;
-        --text-muted:     #8C8982;
+        /* ── BACKGROUND ANIMATION ── */
+        .city-bg {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60vh;
+            z-index: 1;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 1%;
+            opacity: 0.15;
+            pointer-events: none;
+        }
 
-        --accent:         #D4CFC6;
-        --accent-dim:     #8A8780;
+        .building {
+            width: 8%;
+            background: #1A1C1C;
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+            position: relative;
+            display: flex;
+            flex-wrap: wrap;
+            padding: 1rem 0.5rem;
+            align-content: flex-start;
+            gap: 4px;
+        }
 
-        --success:  #7A9E7A;
-        --warning:  #B89A5A;
-        --error:    #A06060;
-        --running:  #C8B880;
+        .window {
+            width: calc(33% - 4px);
+            height: 12px;
+            background: #0D0E0E;
+            border-radius: 2px;
+            transition: background 0.5s;
+        }
 
-        --font: 'Inter', system-ui, -apple-system, sans-serif;
-        --mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+        .window.lit {
+            background: var(--accent-glow);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
 
-        --radius-sm: 4px;
-        --radius:    8px;
-        --radius-lg: 12px;
-      }
+        /* Gradient overlay to fade buildings out at top */
+        .gradient-mask {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to bottom, var(--bg-page) 0%, transparent 100%);
+            z-index: 2;
+            pointer-events: none;
+        }
 
-      *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-      html { font-size: 15px; }
+        /* ── CONTENT ── */
+        .content {
+            position: relative;
+            z-index: 10;
+            max-width: 760px;
+            padding: 3rem;
+            text-align: center;
+            background: rgba(13, 14, 14, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            transform: translateY(20px);
+            opacity: 0;
+        }
 
-      body {
-        font-family: var(--font);
-        background: var(--bg-page);
-        color: var(--text-secondary);
-        line-height: 1.6;
-        min-height: 100vh;
-        display: grid;
-        grid-template-columns: 210px 1fr;
-        grid-template-rows: auto 1fr;
-        overflow: hidden;
-        height: 100vh;
-      }
+        .tag {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--accent-glow);
+            margin-bottom: 1.5rem;
+            display: inline-block;
+        }
 
-      /* ── SIDEBAR ── */
-      .sidebar {
-        grid-row: 1 / -1;
-        border-right: 1px solid var(--border-subtle);
-        padding: 2rem 1.5rem;
-        display: flex;
-        flex-direction: column;
-        gap: 2.5rem;
-        overflow-y: auto;
-      }
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.2;
+            letter-spacing: -0.03em;
+            margin-bottom: 1.5rem;
+        }
 
-      .sidebar-logo { display:flex; align-items:center; gap:0.6rem; text-decoration:none; }
-      .logo-mark {
-        width: 22px; height: 22px;
-        border: 1px solid var(--border-strong);
-        border-radius: var(--radius-sm);
-        display: flex; align-items: center; justify-content: center;
-        flex-shrink: 0;
-      }
-      .logo-mark svg { opacity: 0.7; }
-      .logo-text { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); letter-spacing: -0.01em; }
+        p {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: 2.5rem;
+        }
 
-      .sidebar-section-label {
-        font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
-        letter-spacing: 0.1em; color: var(--text-muted);
-        margin-bottom: 0.6rem; padding-left: 0.5rem;
-      }
-      .nav-item {
-        display: flex; align-items: center; gap: 0.7rem;
-        padding: 0.5rem 0.75rem; border-radius: var(--radius-sm);
-        cursor: pointer; font-size: 0.88rem; color: var(--text-muted);
-        border: 1px solid transparent;
-        transition: color 0.15s, border-color 0.15s, background 0.15s;
-        user-select: none;
-      }
-      .nav-item:hover { color: var(--text-secondary); background: var(--bg-raised); }
-      .nav-item.active { color: var(--text-primary); background: var(--bg-elevated); border-color: var(--border-default); }
-      .nav-item svg { flex-shrink: 0; opacity: 0.6; }
-      .nav-item.active svg { opacity: 1; }
+        .cta-btn {
+            display: inline-block;
+            background: var(--text-primary);
+            color: #0A0A0A;
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            padding: 1.1rem 2.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--text-primary);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(244, 241, 237, 0.1);
+        }
 
-      .sidebar-meta {
-        margin-top: auto; padding-top: 1.5rem;
-        border-top: 1px solid var(--border-subtle);
-        font-size: 0.8rem; color: var(--text-muted); line-height: 1.9;
-      }
-      .sidebar-meta strong { color: var(--text-secondary); }
+        .cta-btn:hover {
+            background: transparent;
+            color: var(--text-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(244, 241, 237, 0.15);
+        }
+        
+        .cta-subtext {
+            display: block;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
 
-      /* ── TOPBAR ── */
-      .topbar {
-        border-bottom: 1px solid var(--border-subtle);
-        padding: 0 2.5rem; height: 60px;
-        display: flex; align-items: center; gap: 2rem;
-      }
-
-      .scrubber-group { display: flex; align-items: center; gap: 1rem; flex: 1; max-width: 400px; }
-      .scrubber-group label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.09em; color: var(--text-muted); flex-shrink: 0; }
-      .scrubber-time { font-family: var(--mono); font-size: 0.85rem; color: var(--accent); flex-shrink: 0; min-width: 3.2rem; }
-
-      input[type="range"] {
-        -webkit-appearance: none; flex: 1; height: 2px;
-        background: var(--border-default); outline: none; cursor: pointer;
-      }
-      input[type="range"]::-webkit-slider-thumb {
-        -webkit-appearance: none; width: 12px; height: 12px;
-        border-radius: 50%; background: var(--accent); cursor: grab;
-        transition: transform 0.1s;
-      }
-      input[type="range"]::-webkit-slider-thumb:active { transform: scale(1.4); }
-
-      .topbar-actions { display: flex; align-items: center; gap: 1.25rem; margin-left: auto; }
-      
-      .auto-status-indicator { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem; }
-
-      .btn {
-        font-family: var(--font); font-size: 0.78rem; font-weight: 500;
-        border-radius: var(--radius-sm); cursor: pointer;
-        transition: background 0.15s, border-color 0.15s, color 0.15s;
-        white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem;
-        border: 1px solid; padding: 0.35rem 0.9rem; letter-spacing: 0.01em; width: 140px;
-      }
-      .btn-primary { background: var(--text-primary); color: #0A0A0A; border-color: var(--text-primary); }
-      .btn-primary:hover { background: var(--accent); border-color: var(--accent); }
-      .btn-primary:disabled { background: var(--bg-overlay); color: var(--text-muted); border-color: var(--border-default); cursor: not-allowed; }
-      .btn-secondary { background: transparent; color: var(--text-secondary); border-color: var(--border-default); }
-      .btn-secondary:hover { border-color: var(--border-strong); color: var(--text-primary); }
-      
-      .btn-ghost { background: transparent; color: var(--text-muted); border-color: transparent; width: auto; padding: 0.35rem 0.5rem; }
-      .btn-ghost:hover { color: var(--text-secondary); }
-
-      /* ── MAIN SHELL ── */
-      .main { overflow: hidden; display: flex; flex-direction: column; }
-
-      .view { display: none; flex: 1; overflow-y: auto; padding: 2.5rem; }
-      .view.active { display: flex; flex-direction: column; gap: 2rem; }
-
-      .view-header { padding-bottom: 2rem; border-bottom: 1px solid var(--border-subtle); }
-      .view-title { font-size: 1.4rem; font-weight: 600; color: var(--text-primary); letter-spacing: -0.02em; margin-bottom: 0.35rem; }
-      .view-subtitle { font-size: 0.9rem; color: var(--text-muted); }
-
-      /* ─────────────────────────────────────────────────
-         VIEW: WORKFLOW
-      ───────────────────────────────────────────────── */
-      .workflow-body { display: grid; grid-template-columns: 1fr 340px; gap: 2.5rem; flex: 1; min-height: 0; }
-
-      .wf-graph-col { display: flex; flex-direction: column; gap: 1.5rem; min-height: 0; overflow-y: auto; scroll-behavior: smooth; }
-
-      .wf-graph {
-        display: flex; flex-direction: column; align-items: center; gap: 0;
-        padding: 3rem 1.5rem;
-        background: var(--bg-raised); border: 1px solid var(--border-subtle);
-        border-radius: var(--radius-lg);
-      }
-
-      .wf-connector {
-        width: 1px; height: 32px;
-        background: var(--border-subtle); flex-shrink: 0;
-        transition: background 0.5s ease;
-      }
-      .wf-connector.lit { background: var(--accent-dim); }
-
-      .wf-stage { display: flex; justify-content: center; gap: 1.5rem; width: 100%; border: 1px solid transparent; border-radius: var(--radius); padding: 0.5rem; transition: all 0.3s ease; }
-      .wf-stage.s-active-layer { border-color: var(--border-active); background: var(--bg-elevated); }
-
-      /* Parallel block */
-      .wf-parallel-block {
-        width: 100%; display: flex; flex-direction: column; align-items: center;
-        border: 1px solid var(--border-subtle); border-radius: var(--radius); overflow: hidden;
-        transition: all 0.3s ease;
-      }
-      .wf-parallel-block.s-active-layer { border-color: var(--border-active); background: var(--bg-elevated); }
-      
-      .wf-parallel-label {
-        font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted);
-        padding: 0.5rem; background: rgba(0,0,0,0.2); width: 100%; text-align: center;
-        border-bottom: 1px solid var(--border-subtle);
-      }
-      .wf-parallel-inner { display: flex; gap: 0; width: 100%; }
-      .wf-parallel-inner .agent-node {
-        border-radius: 0; border: none; border-right: 1px solid var(--border-subtle);
-        flex: 1; width: auto; background: transparent;
-      }
-      .wf-parallel-inner .agent-node:last-child { border-right: none; }
-
-      /* Agent Node */
-      .agent-node {
-        border: 1px solid var(--border-subtle); border-radius: var(--radius);
-        padding: 1rem 1.2rem; width: 200px; cursor: pointer;
-        transition: border-color 0.2s, background 0.2s;
-        background: var(--bg-page);
-      }
-      .agent-node:hover { border-color: var(--border-strong); background: var(--bg-elevated); }
-      .agent-node.selected { border-color: var(--accent-dim); }
-
-      .wf-parallel-inner .agent-node { padding: 0.8rem 1rem; }
-
-      .node-layer-tag { font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); margin-bottom: 0.5rem; }
-      .node-name { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.75rem; letter-spacing: -0.01em; }
-      .node-status-row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
-      .node-status-badge { display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; font-weight: 500; color: var(--text-muted); }
-      .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border-strong); flex-shrink: 0; transition: background 0.3s ease; }
-      .node-duration { font-family: var(--mono); font-size: 0.7rem; color: var(--text-muted); }
-
-      /* Status states */
-      .agent-node.s-running { border-color: var(--running); background: rgba(200,184,128,0.03); }
-      .agent-node.s-running .status-dot { background: var(--running); }
-      .agent-node.s-running .node-status-badge { color: var(--running); }
-
-      .agent-node.s-completed .status-dot { background: var(--success); }
-      .agent-node.s-completed .node-status-badge { color: var(--success); }
-
-      .agent-node.s-skipped { opacity: 0.4; }
-      .agent-node.s-skipped .status-dot { background: var(--text-muted); }
-
-      /* Final result */
-      .wf-result-strip {
-        width: 100%; border: 1px solid var(--border-subtle); border-radius: var(--radius);
-        padding: 1.1rem 1.4rem; display: flex; align-items: center; justify-content: space-between;
-        background: var(--bg-page); opacity: 0.35; transition: opacity 0.5s, border-color 0.5s;
-        margin-top: 0.5rem;
-      }
-      .wf-result-strip.lit { opacity: 1; border-color: var(--success); }
-      .result-label { font-size: 0.9rem; font-weight: 600; color: var(--text-primary); }
-      .result-sublabel { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.2rem; }
-      .result-indicator { font-family: var(--mono); font-size: 0.8rem; font-weight: 600; color: var(--success); opacity: 0; transition: opacity 0.5s; }
-      .wf-result-strip.lit .result-indicator { opacity: 1; }
-
-      /* ── INSPECTOR ── */
-      .wf-inspector-col { display: flex; flex-direction: column; gap: 1.5rem; min-height: 0; overflow-y: auto; }
-
-      .inspector-panel, .agent-detail-panel, .activity-log {
-        border: 1px solid var(--border-subtle); border-radius: var(--radius-lg);
-        background: var(--bg-raised); overflow: hidden; flex-shrink: 0;
-      }
-      .agent-detail-panel { display: none; }
-      .agent-detail-panel.visible { display: block; }
-
-      .panel-title {
-        padding: 0.9rem 1.4rem;
-        font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em;
-        color: var(--text-muted); border-bottom: 1px solid var(--border-subtle);
-      }
-      .panel-body { padding: 1.25rem 1.4rem; }
-
-      .detail-field { margin-bottom: 1.25rem; }
-      .detail-field:last-child { margin-bottom: 0; }
-      .detail-label { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 0.4rem; }
-      .detail-value { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6; }
-      .detail-value.mono {
-        font-family: var(--mono); font-size: 0.82rem;
-        background: var(--bg-mono); border: 1px solid var(--border-subtle);
-        border-radius: var(--radius-sm); padding: 0.7rem 0.9rem;
-        white-space: pre-wrap; word-break: break-word;
-      }
-
-      .state-row { display: flex; justify-content: space-between; align-items: baseline; padding: 0.6rem 0; border-bottom: 1px solid var(--border-subtle); gap: 1rem; }
-      .state-row:last-child { border-bottom: none; padding-bottom: 0; }
-      .state-key { font-size: 0.8rem; font-weight: 500; color: var(--text-secondary); flex-shrink: 0; }
-      .state-val { font-size: 0.85rem; font-family: var(--mono); font-weight: 600; color: var(--text-primary); text-align: right; }
-
-      .activity-log { flex: 1; display: flex; flex-direction: column; min-height: 180px; }
-      .activity-list { overflow-y: auto; flex: 1; padding: 1rem 1.4rem; }
-      .log-row { display: grid; grid-template-columns: 60px 1fr; gap: 0.8rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border-subtle); align-items: baseline; }
-      .log-row:last-child { border-bottom: none; }
-      .log-ts { font-family: var(--mono); font-size: 0.72rem; color: var(--text-muted); }
-      .log-agent-name { font-size: 0.82rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.2rem; }
-      .log-msg { font-size: 0.78rem; color: var(--text-secondary); line-height: 1.4; }
-      .log-empty { color: var(--text-muted); font-size: 0.85rem; font-style: italic; padding: 0.5rem 0; }
-
-      /* ─────────────────────────────────────────────────
-         VIEW: DASHBOARD
-      ───────────────────────────────────────────────── */
-      .kpi-strip {
-        display: grid; grid-template-columns: repeat(4, 1fr);
-        border: 1px solid var(--border-subtle); border-radius: var(--radius-lg);
-        overflow: hidden; background: var(--bg-raised);
-      }
-      .kpi-cell { padding: 1.75rem 2rem; border-right: 1px solid var(--border-subtle); }
-      .kpi-cell:last-child { border-right: none; }
-      .kpi-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.09em; color: var(--text-muted); margin-bottom: 0.65rem; font-weight: 600; }
-      .kpi-number { font-size: 2rem; font-weight: 600; color: var(--text-primary); letter-spacing: -0.03em; font-variant-numeric: tabular-nums; line-height: 1; margin-bottom: 0.5rem; }
-      .kpi-unit { font-size: 0.9rem; color: var(--text-muted); font-weight: 400; margin-left: 0.2rem; }
-      .kpi-delta { font-size: 0.8rem; color: var(--text-muted); }
-      .kpi-delta.ok { color: var(--success); }
-      .kpi-delta.warn { color: var(--warning); }
-      .kpi-delta.err { color: var(--error); }
-
-      .grid-two { display: grid; grid-template-columns: 1.5fr 1fr; gap: 1.75rem; }
-
-      .panel { border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); background: var(--bg-raised); overflow: hidden; }
-      .panel-header { padding: 1.1rem 1.75rem; border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; }
-      .panel-header-title { font-size: 0.82rem; font-weight: 600; color: var(--text-secondary); }
-      .panel-header-meta { font-size: 0.75rem; color: var(--warning); font-family: var(--mono); }
-      .panel-content { padding: 1.5rem 1.75rem; }
-
-      .data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-      .data-table th { text-align: left; padding: 0 0.8rem 0.8rem; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); border-bottom: 1px solid var(--border-subtle); }
-      .data-table th:first-child { padding-left: 0; }
-      .data-table td { padding: 0.7rem 0.8rem; border-bottom: 1px solid var(--border-subtle); color: var(--text-secondary); font-family: var(--mono); font-size: 0.8rem; }
-      .data-table td:first-child { padding-left: 0; font-family: var(--font); font-size: 0.85rem; color: var(--text-primary); font-weight: 500; }
-      .data-table tr:last-child td { border-bottom: none; }
-      .data-table .conflict-row td { color: var(--warning); font-weight: 600; }
-
-      .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; }
-      .chart-wrap { height: 200px; position: relative; }
-
-      .strategy-tag { display: inline-block; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; padding: 0.3rem 0.7rem; border-radius: var(--radius-sm); border: 1px solid var(--border-default); color: var(--text-secondary); margin-bottom: 0.85rem; }
-      .strategy-reasoning { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.65; }
-
-      .alert-strip { padding: 0.75rem 1.1rem; border-left: 3px solid; margin-bottom: 0.6rem; background: var(--bg-elevated); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
-      .alert-strip.err-strip { border-color: var(--error); }
-      .alert-strip.warn-strip { border-color: var(--warning); }
-      .alert-strip-title { font-size: 0.82rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.2rem; }
-      .alert-strip-body { font-size: 0.78rem; color: var(--text-secondary); line-height: 1.5; }
-
-      /* ─────────────────────────────────────────────────
-         VIEW: ARCHITECTURE
-      ───────────────────────────────────────────────── */
-      .arch-body { max-width: 680px; }
-      .arch-layer { margin-bottom: 2.5rem; }
-      .arch-layer-header { display: flex; align-items: center; gap: 0.85rem; margin-bottom: 0.85rem; padding-bottom: 0.85rem; border-bottom: 1px solid var(--border-subtle); }
-      .arch-index { font-size: 0.75rem; color: var(--text-muted); font-family: var(--mono); width: 1.8rem; text-align: right; flex-shrink: 0; }
-      .arch-layer-name { font-size: 1rem; font-weight: 600; color: var(--text-primary); letter-spacing: -0.01em; }
-      .arch-layer-type { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-left: auto; font-weight: 600; }
-      .arch-desc { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.7; margin-bottom: 0.85rem; padding-left: 2.65rem; }
-      .arch-tools { margin-left: 2.65rem; font-family: var(--mono); font-size: 0.8rem; background: var(--bg-mono); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.7rem 1rem; color: var(--text-muted); }
-
-      /* Scrollbar */
-      ::-webkit-scrollbar { width: 5px; height: 5px; }
-      ::-webkit-scrollbar-track { background: transparent; }
-      ::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 3px; }
-
-      /* Responsive */
-      @media (max-width: 1100px) {
-        body { grid-template-columns: 1fr; grid-template-rows: auto auto 1fr; overflow: auto; height: auto; }
-        .sidebar { grid-row: auto; border-right: none; border-bottom: 1px solid var(--border-subtle); flex-direction: row; flex-wrap: wrap; padding: 1.25rem 1.75rem; gap: 1.25rem; }
-        .sidebar-meta { display: none; }
-        .workflow-body { grid-template-columns: 1fr; }
-        .wf-inspector-col { display: none; }
-        .view { overflow-y: visible; }
-        .main { overflow: visible; }
-        .kpi-strip { grid-template-columns: 1fr 1fr; }
-        .kpi-cell:nth-child(2) { border-right: none; }
-        .kpi-cell:nth-child(3) { border-top: 1px solid var(--border-subtle); }
-        .grid-two { grid-template-columns: 1fr; }
-        .chart-row { grid-template-columns: 1fr; }
-      }
+        @media (max-width: 768px) {
+            h1 { font-size: 2.2rem; }
+            p { font-size: 1rem; }
+            .content { padding: 2rem; margin: 1rem; }
+        }
     </style>
 </head>
 <body>
 
-  <!-- ── SIDEBAR ── -->
-  <nav class="sidebar">
-    <a class="sidebar-logo" href="#">
-      <div class="logo-mark">
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-          <path d="M6 1L1 3.5V8.5L6 11L11 8.5V3.5L6 1Z" stroke="#F4F1ED" stroke-width="1.2" stroke-linejoin="round"/>
-        </svg>
-      </div>
-      <span class="logo-text">Eco-Loop</span>
-    </a>
+    <!-- Background Buildings -->
+    <div class="city-bg" id="city"></div>
+    <div class="gradient-mask"></div>
 
-    <div class="sidebar-section">
-      <div class="sidebar-section-label">Navigation</div>
-      <div class="nav-item active" onclick="showView('workflow', this)">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4M9 17H7m10 0h-2M12 11l-5 6M12 11l5 6"/></svg>
-        Workflow
-      </div>
-      <div class="nav-item" onclick="showView('dashboard', this)">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
-        Dashboard
-      </div>
-      <div class="nav-item" onclick="showView('architecture', this)">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-        Architecture
-      </div>
-    </div>
-
-    <div class="sidebar-meta">
-      <div><strong>Model</strong> qwen2.5:7b-instruct</div>
-      <div><strong>Engine</strong> EnergyPlus 26.1</div>
-      <div><strong>Protocol</strong> FastMCP</div>
-      <div><strong>Zones</strong> 5</div>
-    </div>
-  </nav>
-
-  <!-- ── TOPBAR ── -->
-  <div class="topbar">
-    <div class="scrubber-group">
-      <label>Tick</label>
-      <span class="scrubber-time" id="scrubber-time">00:00</span>
-      <input type="range" id="scrubber" min="0" max="47" value="0">
-    </div>
-    
-    <div class="topbar-actions">
-      <div class="auto-status-indicator">
-        AUTO 
-        <span id="auto-status-text" style="color: var(--text-secondary)">● STOPPED</span>
-      </div>
-      
-      <button class="btn btn-ghost" onclick="advanceTickManual()">Next Tick</button>
-      
-      <div style="display: flex; flex-direction: column; gap: 0.3rem;">
-        <button class="btn btn-primary" id="btn-run" onclick="startAutoTick()">
-          ▶ Run Next Tick
-        </button>
-        <button class="btn btn-secondary" id="btn-stop" onclick="stopAutoTick()">
-          ■ Stop Tick
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── MAIN ── -->
-  <main class="main">
-
-    <!-- VIEW: WORKFLOW -->
-    <div class="view active" id="view-workflow">
-      <div class="view-header">
-        <div class="view-title">Agent Execution</div>
-        <div class="view-subtitle">5-layer cognitive architecture · 7 LLM agents · 30-minute control cycle</div>
-      </div>
-
-      <div class="workflow-body">
-
-        <!-- Graph -->
-        <div class="wf-graph-col" id="wf-scroll-container">
-          <div class="wf-graph">
-
-            <!-- Perception -->
-            <div class="wf-stage" id="stage-perception">
-              <div class="agent-node" id="node-StateCompressor" onclick="openDetail('State Compressor')">
-                <div class="node-layer-tag">Perception</div>
-                <div class="node-name">State Compressor</div>
-                <div class="node-status-row">
-                  <div class="node-status-badge"><div class="status-dot"></div><span id="lbl-StateCompressor">Waiting</span></div>
-                  <span class="node-duration" id="dur-StateCompressor"></span>
-                </div>
-              </div>
-              <div class="agent-node" id="node-AnomalyDetector" onclick="openDetail('Anomaly Detector')">
-                <div class="node-layer-tag">Perception</div>
-                <div class="node-name">Anomaly Detector</div>
-                <div class="node-status-row">
-                  <div class="node-status-badge"><div class="status-dot"></div><span id="lbl-AnomalyDetector">Waiting</span></div>
-                  <span class="node-duration" id="dur-AnomalyDetector"></span>
-                </div>
-              </div>
-            </div>
-
-            <div class="wf-connector" id="conn-1"></div>
-
-            <!-- Planner -->
-            <div class="wf-stage" id="stage-planning">
-              <div class="agent-node" style="width:424px;" id="node-ForecastPlanner" onclick="openDetail('Forecast Planner')">
-                <div class="node-layer-tag">Planning · Conditional every 6 h</div>
-                <div class="node-name">Forecast Planner</div>
-                <div class="node-status-row">
-                  <div class="node-status-badge"><div class="status-dot"></div><span id="lbl-ForecastPlanner">Waiting</span></div>
-                  <span class="node-duration" id="dur-ForecastPlanner"></span>
-                </div>
-              </div>
-            </div>
-
-            <div class="wf-connector" id="conn-2"></div>
-
-            <!-- Zone Agents (parallel) -->
-            <div class="wf-parallel-block" id="stage-reasoning-zones">
-              <div class="wf-parallel-label">Parallel · asyncio.gather</div>
-              <div class="wf-parallel-inner">
-                <div class="agent-node" id="node-ZoneCORE_ZN" onclick="openDetail('Zone Agent (CORE_ZN)')">
-                  <div class="node-layer-tag">Reasoning</div>
-                  <div class="node-name">CORE_ZN</div>
-                  <div class="node-status-badge"><div class="status-dot"></div><span id="lbl-ZoneCORE_ZN">Waiting</span></div>
-                </div>
-                <div class="agent-node" id="node-ZonePERIMETER_ZN_1" onclick="openDetail('Zone Agent (PERIMETER_ZN_1)')">
-                  <div class="node-layer-tag">Reasoning</div>
-                  <div class="node-name">PZ1 · South</div>
-                  <div class="node-status-badge"><div class="status-dot"></div><span id="lbl-ZonePERIMETER_ZN_1">Waiting</span></div>
-                </div>
-                <div class="agent-node" id="node-ZonePERIMETER_ZN_2" onclick="openDetail('Zone Agent (PERIMETER_ZN_2)')">
-                  <div class="node-layer-tag">Reasoning</div>
-                  <div class="node-name">PZ2 · East</div>
-                  <div class="node-status-badge"><div class="status-dot"></div><span id="lbl-ZonePERIMETER_ZN_2">Waiting</span></div>
-                </div>
-                <div class="agent-node" id="node-ZonePERIMETER_ZN_3" onclick="openDetail('Zone Agent (PERIMETER_ZN_3)')">
-                  <div class="node-layer-tag">Reasoning</div>
-                  <div class="node-name">PZ3 · North</div>
-                  <div class="node-status-badge"><div class="status-dot"></div><span id="lbl-ZonePERIMETER_ZN_3">Waiting</span></div>
-                </div>
-                <div class="agent-node" id="node-ZonePERIMETER_ZN_4" onclick="openDetail('Zone Agent (PERIMETER_ZN_4)')">
-                  <div class="node-layer-tag">Reasoning</div>
-                  <div class="node-name">PZ4 · West</div>
-                  <div class="node-status-badge"><div class="status-dot"></div><span id="lbl-ZonePERIMETER_ZN_4">Waiting</span></div>
-                </div>
-              </div>
-            </div>
-
-            <div class="wf-connector" id="conn-3"></div>
-
-            <!-- Coordinator -->
-            <div class="wf-stage" id="stage-reasoning-coord">
-              <div class="agent-node" style="width:424px;" id="node-Coordinator" onclick="openDetail('Coordinator')">
-                <div class="node-layer-tag">Reasoning · Conflict Resolution</div>
-                <div class="node-name">Coordinator</div>
-                <div class="node-status-row">
-                  <div class="node-status-badge"><div class="status-dot"></div><span id="lbl-Coordinator">Waiting</span></div>
-                  <span class="node-duration" id="dur-Coordinator"></span>
-                </div>
-              </div>
-            </div>
-
-            <div class="wf-connector" id="conn-4"></div>
-
-            <!-- Safety -->
-            <div class="wf-stage" id="stage-safety">
-              <div class="agent-node" id="node-ComfortAuditor" onclick="openDetail('Comfort Auditor')">
-                <div class="node-layer-tag">Safety · PMV Watchdog</div>
-                <div class="node-name">Comfort Auditor</div>
-                <div class="node-status-row">
-                  <div class="node-status-badge"><div class="status-dot"></div><span id="lbl-ComfortAuditor">Waiting</span></div>
-                  <span class="node-duration" id="dur-ComfortAuditor"></span>
-                </div>
-              </div>
-              <div class="agent-node" id="node-GuardrailEngine" onclick="openDetail('Guardrail Engine')">
-                <div class="node-layer-tag">Safety · Deterministic</div>
-                <div class="node-name">Guardrail Engine</div>
-                <div class="node-status-row">
-                  <div class="node-status-badge"><div class="status-dot"></div><span id="lbl-GuardrailEngine">Waiting</span></div>
-                  <span class="node-duration" id="dur-GuardrailEngine"></span>
-                </div>
-              </div>
-            </div>
-
-            <div class="wf-connector" id="conn-5"></div>
-
-            <div class="wf-result-strip" id="result-strip">
-              <div>
-                <div class="result-label">EnergyPlus Actuators</div>
-                <div class="result-sublabel">Setpoints applied to all 5 zones</div>
-              </div>
-              <span class="result-indicator">✓ Applied</span>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- Inspector -->
-        <div class="wf-inspector-col">
-
-          <div class="agent-detail-panel" id="detail-panel">
-            <div class="panel-title" id="detail-panel-title">Select an agent</div>
-            <div class="panel-body">
-              <div class="detail-field">
-                <div class="detail-label">Status</div>
-                <div class="detail-value" id="d-status">—</div>
-              </div>
-              <div class="detail-field">
-                <div class="detail-label">Duration</div>
-                <div class="detail-value mono" id="d-duration">—</div>
-              </div>
-              <div class="detail-field">
-                <div class="detail-label">Input</div>
-                <div class="detail-value mono" id="d-input">—</div>
-              </div>
-              <div class="detail-field">
-                <div class="detail-label">Output</div>
-                <div class="detail-value mono" id="d-output">—</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="inspector-panel">
-            <div class="panel-title">Shared State</div>
-            <div class="panel-body">
-              <div class="state-row"><span class="state-key">Strategy</span><span class="state-val" id="ss-strategy">—</span></div>
-              <div class="state-row"><span class="state-key">Peak Cap</span><span class="state-val" id="ss-cap">—</span></div>
-              <div class="state-row"><span class="state-key">Facility Load</span><span class="state-val" id="ss-load">—</span></div>
-              <div class="state-row"><span class="state-key">Coordinator</span><span class="state-val" id="ss-coord">—</span></div>
-              <div class="state-row"><span class="state-key">Overrides</span><span class="state-val" id="ss-overrides">—</span></div>
-            </div>
-          </div>
-
-          <div class="activity-log">
-            <div class="panel-title">Execution Log</div>
-            <div class="activity-list" id="activity-list">
-              <div class="log-empty">Run the workflow to see agent activity.</div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </div>
-
-    <!-- VIEW: DASHBOARD -->
-    <div class="view" id="view-dashboard">
-      <div class="view-header">
-        <div class="view-title">Dashboard</div>
-        <div class="view-subtitle">Building performance and agent decisions for current tick</div>
-      </div>
-
-      <div class="kpi-strip">
-        <div class="kpi-cell">
-          <div class="kpi-label">Facility Demand</div>
-          <div class="kpi-number" id="kpi-demand">—</div>
-          <div class="kpi-delta" id="kpi-demand-d"></div>
-        </div>
-        <div class="kpi-cell">
-          <div class="kpi-label">Avg PMV</div>
-          <div class="kpi-number" id="kpi-pmv">—</div>
-          <div class="kpi-delta" id="kpi-pmv-d"></div>
-        </div>
-        <div class="kpi-cell">
-          <div class="kpi-label">Grid Carbon</div>
-          <div class="kpi-number" id="kpi-carbon">—</div>
-          <div class="kpi-delta" id="kpi-carbon-d"></div>
-        </div>
-        <div class="kpi-cell">
-          <div class="kpi-label">Interventions</div>
-          <div class="kpi-number" id="kpi-clamps">—</div>
-          <div class="kpi-delta" id="kpi-clamps-d"></div>
-        </div>
-      </div>
-
-      <div class="grid-two">
-        <div class="panel">
-          <div class="panel-header">
-            <span class="panel-header-title">Reasoning Layer · Zone Proposals</span>
-            <span class="panel-header-meta" id="ph-coord-flag"></span>
-          </div>
-          <div class="panel-content" id="proposals-table-wrap"></div>
-        </div>
-        <div class="panel">
-          <div class="panel-header"><span class="panel-header-title">Planning Layer · Strategy</span></div>
-          <div class="panel-content">
-            <div id="strategy-content"></div>
-            <div id="safety-content" style="margin-top:1.5rem;"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-header"><span class="panel-header-title">Performance Timeline · 24 h</span></div>
-        <div class="panel-content">
-          <div class="chart-row">
-            <div>
-              <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;font-weight:600;color:var(--text-muted);margin-bottom:0.75rem;">Power Demand (kW)</div>
-              <div class="chart-wrap"><canvas id="chart-energy"></canvas></div>
-            </div>
-            <div>
-              <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;font-weight:600;color:var(--text-muted);margin-bottom:0.75rem;">Average PMV</div>
-              <div class="chart-wrap"><canvas id="chart-pmv"></canvas></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- VIEW: ARCHITECTURE -->
-    <div class="view" id="view-architecture">
-      <div class="view-header">
-        <div class="view-title">Architecture</div>
-        <div class="view-subtitle">5-layer cognitive control system coordinated over MCP</div>
-      </div>
-      <div class="arch-body">
-
-        <div class="arch-layer">
-          <div class="arch-layer-header">
-            <span class="arch-index">01</span>
-            <span class="arch-layer-name">Perception Layer</span>
-            <span class="arch-layer-type">Always active</span>
-          </div>
-          <div class="arch-desc">Raw 1-minute EnergyPlus sensor readings are compressed into 30-minute state snapshots. The Anomaly Detector flags physically impossible values before they reach any LLM, preventing context pollution from broken sensors.</div>
-          <div class="arch-tools">get_building_state() · get_zone_state() · get_anomaly_report()</div>
-        </div>
-
-        <div class="arch-layer">
-          <div class="arch-layer-header">
-            <span class="arch-index">02</span>
-            <span class="arch-layer-name">Memory Layer</span>
-            <span class="arch-layer-type">Persistent across ticks</span>
-          </div>
-          <div class="arch-desc">Each agent prompt is injected with the last 3 decisions and whether they were overridden. If a proposal was guardrail-clamped, the next tick the agent reads that feedback and self-corrects—no retraining required.</div>
-          <div class="arch-tools">get_my_last_decisions() · get_performance_summary()</div>
-        </div>
-
-        <div class="arch-layer">
-          <div class="arch-layer-header">
-            <span class="arch-index">03</span>
-            <span class="arch-layer-name">Planning Layer</span>
-            <span class="arch-layer-type">Conditional · every 6 h</span>
-          </div>
-          <div class="arch-desc">The Forecast Planner reads the 24-hour weather and grid carbon curve every 6 simulation hours. It outputs a named strategy and a peak kW cap consumed by all downstream agents on every subsequent tick.</div>
-          <div class="arch-tools">get_weather_forecast() · get_grid_carbon() · set_strategy() · get_current_strategy()</div>
-        </div>
-
-        <div class="arch-layer">
-          <div class="arch-layer-header">
-            <span class="arch-index">04</span>
-            <span class="arch-layer-name">Reasoning Layer</span>
-            <span class="arch-layer-type">Every tick · parallel + sequential</span>
-          </div>
-          <div class="arch-desc">Five Zone Agents run concurrently via asyncio.gather, each proposing setpoints for their specific zone. The Coordinator collects all proposals, checks total kW against the Planner's cap, and negotiates compromises under load pressure.</div>
-          <div class="arch-tools">propose_zone_setpoint() · get_all_zone_proposals() · approve_setpoints()</div>
-        </div>
-
-        <div class="arch-layer">
-          <div class="arch-layer-header">
-            <span class="arch-index">05</span>
-            <span class="arch-layer-name">Safety Layer</span>
-            <span class="arch-layer-type">Hard veto · every tick</span>
-          </div>
-          <div class="arch-desc">The Comfort Auditor independently monitors all PMV readings. If any zone exceeds ±0.5, it issues an emergency override that bypasses the Coordinator entirely. The deterministic Guardrail Engine then enforces rate limits (max 3 °C/tick) and hard floor/ceiling bounds before actuator commands are issued.</div>
-          <div class="arch-tools">get_all_zone_pmv() · issue_comfort_override()</div>
-        </div>
-
-      </div>
-    </div>
-
-  </main>
-
-  <script src="demo_data.js"></script>
-  <script>
-    /* ── DATA & STATE ── */
-    let DATA = null;
-    let currentTick = 0;
-    
-    let isRunningTick = false;
-    let isAutoMode = false;
-    let autoStopRequested = false;
-    
-    let currentTickEvents = [];
-
-    /* ── NODE MAP ── */
-    const NODE_MAP = {
-      'State Compressor':            { el:'node-StateCompressor',       lbl:'lbl-StateCompressor',       dur:'dur-StateCompressor'     },
-      'Anomaly Detector':            { el:'node-AnomalyDetector',       lbl:'lbl-AnomalyDetector',       dur:'dur-AnomalyDetector'     },
-      'Forecast Planner':            { el:'node-ForecastPlanner',       lbl:'lbl-ForecastPlanner',       dur:'dur-ForecastPlanner'     },
-      'Zone Agent (CORE_ZN)':        { el:'node-ZoneCORE_ZN',           lbl:'lbl-ZoneCORE_ZN',           dur:null                      },
-      'Zone Agent (PERIMETER_ZN_1)': { el:'node-ZonePERIMETER_ZN_1',   lbl:'lbl-ZonePERIMETER_ZN_1',   dur:null                      },
-      'Zone Agent (PERIMETER_ZN_2)': { el:'node-ZonePERIMETER_ZN_2',   lbl:'lbl-ZonePERIMETER_ZN_2',   dur:null                      },
-      'Zone Agent (PERIMETER_ZN_3)': { el:'node-ZonePERIMETER_ZN_3',   lbl:'lbl-ZonePERIMETER_ZN_3',   dur:null                      },
-      'Zone Agent (PERIMETER_ZN_4)': { el:'node-ZonePERIMETER_ZN_4',   lbl:'lbl-ZonePERIMETER_ZN_4',   dur:null                      },
-      'Coordinator':                 { el:'node-Coordinator',           lbl:'lbl-Coordinator',           dur:'dur-Coordinator'         },
-      'Comfort Auditor':             { el:'node-ComfortAuditor',        lbl:'lbl-ComfortAuditor',        dur:'dur-ComfortAuditor'      },
-      'Guardrail Engine':            { el:'node-GuardrailEngine',       lbl:'lbl-GuardrailEngine',       dur:'dur-GuardrailEngine'     },
-    };
-
-    /* ── INIT ── */
-    window.onload = function() {
-      if (typeof DEMO_DATA === 'undefined') {
-        document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;color:#5A5550;font-family:Inter,sans-serif;font-size:0.9rem;">demo_data.js not found. Run generate_demo_data.py first.</div>';
-        return;
-      }
-      DATA = DEMO_DATA;
-      document.getElementById('scrubber').max = DATA.ticks.length - 1;
-      document.getElementById('scrubber').addEventListener('input', function() {
-        if (isRunningTick) { this.value = currentTick; return; }
-        currentTick = parseInt(this.value);
-        syncUI();
-      });
-      syncUI();
-      setTimeout(drawCharts, 50);
-      window.addEventListener('resize', drawCharts);
-    };
-
-    /* ── VIEW SWITCHING ── */
-    function showView(id, el) {
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      document.getElementById('view-' + id).classList.add('active');
-      el.classList.add('active');
-      if (id === 'dashboard') setTimeout(drawCharts, 50);
-    }
-
-    /* ── SYNC UI ── */
-    function syncUI() {
-      if (!DATA) return;
-      const t = DATA.ticks[currentTick];
-      document.getElementById('scrubber').value = currentTick;
-      document.getElementById('scrubber-time').textContent = t.sim_time.slice(11, 16);
-      updateSharedState(t);
-      updateDashboard(t);
-      if (!isRunningTick) resetGraph();
-    }
-
-    function advanceTickManual() {
-      if (isRunningTick) return;
-      currentTick = Math.min(currentTick + 1, DATA.ticks.length - 1);
-      syncUI();
-    }
-
-    /* ── AUTO-PROGRESSION & CONTROLS ── */
-    function startAutoTick() {
-      if (isRunningTick) return;
-      isAutoMode = true;
-      autoStopRequested = false;
-      document.getElementById('auto-status-text').innerHTML = '● RUNNING';
-      document.getElementById('auto-status-text').style.color = 'var(--success)';
-      runWorkflowLoop();
-    }
-
-    function stopAutoTick() {
-      if (isRunningTick) {
-        autoStopRequested = true;
-        document.getElementById('auto-status-text').textContent = 'STOPPING...';
-        document.getElementById('auto-status-text').style.color = 'var(--warning)';
-      }
-      isAutoMode = false;
-    }
-
-    async function runWorkflowLoop() {
-      while (currentTick < DATA.ticks.length) {
-        await executeSingleTickAnimation();
+    <!-- Main Content -->
+    <div class="content">
+        <span class="tag">The Problem</span>
+        <h1>Commercial Buildings are Wasting 30% of their Energy.</h1>
+        <p>
+            Today's HVAC systems are static and disconnected. They rely on fixed schedules and primitive thermostats, unable to dynamically negotiate energy usage across massive facilities. The result? High costs, excessive carbon emissions, and uncomfortable environments.
+            <br><br>
+            <strong>Eco-Loop</strong> solves this using a multi-agent cognitive architecture. Autonomous LLM agents coordinate to predict, plan, and precisely distribute energy across the building in real-time.
+        </p>
         
-        if (autoStopRequested || !isAutoMode) {
-          isAutoMode = false;
-          document.getElementById('auto-status-text').textContent = '● STOPPED';
-          document.getElementById('auto-status-text').style.color = 'var(--text-secondary)';
-          break;
+        <a href="app.html?experience=voiceover" class="cta-btn">
+            Skip reading. Listen to the Voiceover.
+        </a>
+        <span class="cta-subtext">Clicking will start the simulation and audio playback automatically.</span>
+    </div>
+
+    <script>
+        // Generate City Background
+        const city = document.getElementById('city');
+        const buildingHeights = [30, 50, 40, 70, 45, 60, 35, 55, 40];
+        
+        buildingHeights.forEach((h, i) => {
+            const b = document.createElement('div');
+            b.className = 'building';
+            b.style.height = `${h}vh`;
+            
+            // Add windows
+            const numWindows = Math.floor(h / 2); // rough estimate
+            for (let j=0; j<numWindows; j++) {
+                const w = document.createElement('div');
+                w.className = 'window';
+                b.appendChild(w);
+            }
+            city.appendChild(b);
+        });
+
+        // Intro Animation for Content
+        anime({
+            targets: '.content',
+            translateY: [40, 0],
+            opacity: [0, 1],
+            duration: 1200,
+            easing: 'easeOutCubic',
+            delay: 300
+        });
+
+        // Building Lights Animation Loop
+        const allWindows = document.querySelectorAll('.window');
+        
+        function animateLights() {
+            // Randomly turn off some lights
+            allWindows.forEach(w => w.classList.remove('lit'));
+            
+            // Randomly turn on some lights
+            const numLightsToOn = Math.floor(allWindows.length * 0.15);
+            for(let i=0; i<numLightsToOn; i++) {
+                const randomWindow = allWindows[Math.floor(Math.random() * allWindows.length)];
+                randomWindow.classList.add('lit');
+            }
+
+            anime({
+                targets: '.lit',
+                opacity: [0.3, 1],
+                direction: 'alternate',
+                duration: 1500,
+                easing: 'easeInOutSine',
+                complete: () => {
+                    setTimeout(animateLights, 1000);
+                }
+            });
         }
+        
+        setTimeout(animateLights, 500);
 
-        if (currentTick >= DATA.ticks.length - 1) {
-          document.getElementById('auto-status-text').textContent = '✓ COMPLETE';
-          document.getElementById('auto-status-text').style.color = 'var(--success)';
-          isAutoMode = false;
-          break;
-        }
-
-        // Wait brief moment before auto-starting next tick
-        await new Promise(r => setTimeout(r, 800));
-        currentTick++;
-      }
-    }
-
-    /* ── SHARED STATE ── */
-    function updateSharedState(t) {
-      document.getElementById('ss-strategy').textContent = t.strategy.strategy.toUpperCase();
-      document.getElementById('ss-cap').textContent = `${t.strategy.peak_demand_cap_kw} kW`;
-      const over = t.facility_total_kw > t.strategy.peak_demand_cap_kw;
-      const loadEl = document.getElementById('ss-load');
-      loadEl.textContent = `${t.facility_total_kw} kW`;
-      loadEl.style.color = over ? 'var(--error)' : 'var(--success)';
-      const coordEl = document.getElementById('ss-coord');
-      coordEl.textContent = t.coordinator_constrained ? 'Conflict resolved' : 'All approved';
-      coordEl.style.color = t.coordinator_constrained ? 'var(--warning)' : 'var(--text-secondary)';
-      const ovCount = Object.keys(t.comfort_overrides || {}).length;
-      const ovEl = document.getElementById('ss-overrides');
-      ovEl.textContent = ovCount > 0 ? `${ovCount} zone(s)` : 'None';
-      ovEl.style.color = ovCount > 0 ? 'var(--error)' : 'var(--text-primary)';
-    }
-
-    /* ── GRAPH ── */
-    function resetGraph() {
-      document.querySelectorAll('.s-active-layer').forEach(el => el.classList.remove('s-active-layer'));
-      document.querySelectorAll('.agent-node').forEach(n => { n.className = 'agent-node'; });
-      Object.values(NODE_MAP).forEach(m => {
-        const l = document.getElementById(m.lbl); if (l) l.textContent = 'Waiting';
-        if (m.dur) { const d = document.getElementById(m.dur); if (d) d.textContent = ''; }
-      });
-      for (let i = 1; i <= 5; i++) { const c = document.getElementById(`conn-${i}`); if (c) c.classList.remove('lit'); }
-      document.getElementById('result-strip').classList.remove('lit');
-      document.getElementById('wf-scroll-container').scrollTop = 0;
-    }
-
-    function setNodeState(name, status, durStr) {
-      const m = NODE_MAP[name]; if (!m) return;
-      const node = document.getElementById(m.el); if (!node) return;
-      node.classList.remove('s-running','s-completed','s-skipped');
-      if (status==='RUNNING') node.classList.add('s-running');
-      else if (status==='COMPLETED') node.classList.add('s-completed');
-      else if (status==='SKIPPED') node.classList.add('s-skipped');
-      const l = document.getElementById(m.lbl);
-      if (l) l.textContent = status.charAt(0) + status.slice(1).toLowerCase();
-      if (m.dur && durStr) { const d = document.getElementById(m.dur); if (d) d.textContent = durStr; }
-    }
-
-    /* ── DETAIL PANEL ── */
-    function openDetail(agentName) {
-      const ev = currentTickEvents.find(e => e.agent === agentName);
-      if (!ev) return;
-      const panel = document.getElementById('detail-panel');
-      panel.classList.add('visible');
-      document.getElementById('detail-panel-title').textContent = agentName.toUpperCase();
-      const stEl = document.getElementById('d-status');
-      stEl.textContent = ev.status;
-      stEl.style.color = ev.status==='COMPLETED' ? 'var(--success)' : ev.status==='RUNNING' ? 'var(--running)' : ev.status==='SKIPPED' ? 'var(--text-muted)' : 'var(--text-secondary)';
-      document.getElementById('d-duration').textContent = ev.duration_s ? `${ev.duration_s}s` : '—';
-      document.getElementById('d-input').textContent = ev.input_summary || '—';
-      document.getElementById('d-output').textContent = ev.output_summary || '—';
-      document.querySelectorAll('.agent-node').forEach(n => n.classList.remove('selected'));
-      const m = NODE_MAP[agentName]; if (m) { const n = document.getElementById(m.el); if (n) n.classList.add('selected'); }
-    }
-
-    /* ── LOG ── */
-    function clearLog() { document.getElementById('activity-list').innerHTML = ''; }
-    function appendLog(ts, name, msg) {
-      const list = document.getElementById('activity-list');
-      const row = document.createElement('div');
-      row.className = 'log-row';
-      row.innerHTML = `<span class="log-ts">${ts}</span><div class="log-content"><div class="log-agent-name">${name}</div><div class="log-msg">${msg}</div></div>`;
-      list.appendChild(row);
-      list.scrollTop = list.scrollHeight;
-    }
-
-    /* ── RUN SINGLE TICK WORKFLOW ── */
-    async function executeSingleTickAnimation() {
-      isRunningTick = true;
-      const t = DATA.ticks[currentTick];
-      document.getElementById('scrubber').value = currentTick;
-      document.getElementById('scrubber-time').textContent = t.sim_time.slice(11, 16);
-
-      const btnRun = document.getElementById('btn-run');
-      btnRun.disabled = true;
-
-      resetGraph(); clearLog();
-      updateSharedState(t); updateDashboard(t);
-      currentTickEvents = t.workflow_events || [];
-      const ts = t.sim_time.slice(11, 19);
-      const sleep = ms => new Promise(r => setTimeout(r, ms));
-
-      // Group parallel zones
-      const sequence = [];
-      let i = 0;
-      while (i < currentTickEvents.length) {
-        const ev = currentTickEvents[i];
-        if (ev.parallel) {
-          const g = [];
-          while (i < currentTickEvents.length && currentTickEvents[i].parallel) g.push(currentTickEvents[i++]);
-          sequence.push(g);
-        } else { sequence.push([ev]); i++; }
-      }
-
-      let connIdx = 1;
-      for (const group of sequence) {
-        const conn = document.getElementById(`conn-${connIdx}`);
-        if (conn && connIdx > 1) { conn.classList.add('lit'); await sleep(150); }
-
-        // Find the UI container for this layer to apply active state and scroll
-        const firstAgentName = group[0].agent;
-        const m = NODE_MAP[firstAgentName];
-        let layerContainer = null;
-        if (m) {
-           const nodeEl = document.getElementById(m.el);
-           if (nodeEl) layerContainer = nodeEl.closest('.wf-stage') || nodeEl.closest('.wf-parallel-block');
-        }
-
-        // Update active class and auto-scroll
-        document.querySelectorAll('.s-active-layer').forEach(el => el.classList.remove('s-active-layer'));
-        if (layerContainer) {
-          layerContainer.classList.add('s-active-layer');
-          // Smooth scroll the workflow container
-          layerContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-
-        for (const ev of group) {
-          if (ev.status !== 'SKIPPED') { setNodeState(ev.agent, 'RUNNING', ''); appendLog(ts, ev.agent, 'Executing…'); }
-          else { setNodeState(ev.agent, 'SKIPPED', ''); appendLog(ts, ev.agent, ev.output_summary || 'Skipped'); }
-        }
-
-        const maxDur = Math.max(...group.map(e => e.duration_s || 0.1));
-        await sleep(Math.min(maxDur * 600, 1500));
-
-        for (const ev of group) {
-          setNodeState(ev.agent, ev.status, ev.duration_s ? `${ev.duration_s}s` : '');
-          if (ev.status !== 'SKIPPED') appendLog(ts, ev.agent, ev.output_summary || 'Done');
-        }
-        connIdx++;
-      }
-
-      await sleep(250);
-      const c5 = document.getElementById('conn-5'); if (c5) c5.classList.add('lit');
-      await sleep(150);
-      
-      document.querySelectorAll('.s-active-layer').forEach(el => el.classList.remove('s-active-layer'));
-      
-      const resStrip = document.getElementById('result-strip');
-      resStrip.classList.add('lit');
-      resStrip.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      
-      appendLog(ts, 'System', 'Workflow complete. Actuators updated.');
-
-      isRunningTick = false;
-      btnRun.disabled = false;
-    }
-
-    /* ── DASHBOARD ── */
-    function updateDashboard(t) {
-      document.getElementById('kpi-demand').innerHTML = `${t.facility_total_kw.toFixed(1)}<span class="kpi-unit">kW</span>`;
-      const cap = t.strategy.peak_demand_cap_kw || 50;
-      const dEl = document.getElementById('kpi-demand-d');
-      if (t.facility_total_kw > cap) { dEl.textContent = `Exceeds ${cap} kW cap`; dEl.className='kpi-delta err'; }
-      else { dEl.textContent = `Within ${cap} kW cap`; dEl.className='kpi-delta ok'; }
-
-      const avgPmv = t.zones.reduce((s,z) => s+z.pmv, 0) / t.zones.length;
-      document.getElementById('kpi-pmv').textContent = avgPmv.toFixed(2);
-      const pEl = document.getElementById('kpi-pmv-d');
-      if (Math.abs(avgPmv)>0.5) { pEl.textContent='Comfort violation'; pEl.className='kpi-delta err'; }
-      else if (Math.abs(avgPmv)>0.3) { pEl.textContent='Approaching limit'; pEl.className='kpi-delta warn'; }
-      else { pEl.textContent='Within comfort band'; pEl.className='kpi-delta ok'; }
-
-      document.getElementById('kpi-carbon').innerHTML = `${t.grid_carbon_gco2_kwh.toFixed(0)}<span class="kpi-unit">gCO₂</span>`;
-      const cEl = document.getElementById('kpi-carbon-d');
-      if (t.grid_carbon_gco2_kwh > 550) { cEl.textContent='High intensity'; cEl.className='kpi-delta err'; }
-      else { cEl.textContent='Nominal'; cEl.className='kpi-delta ok'; }
-
-      const interventions = Object.keys(t.guardrail_clamps||{}).length + Object.keys(t.comfort_overrides||{}).length;
-      document.getElementById('kpi-clamps').textContent = interventions;
-      const iEl = document.getElementById('kpi-clamps-d');
-      iEl.textContent = interventions>0 ? 'Active interventions' : 'None required';
-      iEl.className = interventions>0 ? 'kpi-delta err' : 'kpi-delta ok';
-
-      // Proposals table
-      let rows = '';
-      for (const z of DATA.metadata.zones) {
-        const prop = t.zone_proposals[z] || {};
-        const coord = t.coordinator_decision[z] || {};
-        const final = t.clamped_setpoints[z] || coord;
-        const dC = ((coord.cooling_c||0) - (prop.cooling_c||0)).toFixed(1);
-        const conflict = Math.abs(parseFloat(dC)) > 0.1;
-        rows += `<tr class="${conflict?'conflict-row':''}">
-          <td>${z.replace('PERIMETER_','PZ_')}</td>
-          <td>${prop.heating_c??'—'} / ${prop.cooling_c??'—'}</td>
-          <td>${coord.heating_c??'—'} / ${coord.cooling_c??'—'}</td>
-          <td>${final.heating_c??'—'} / ${final.cooling_c??'—'}</td>
-        </tr>`;
-      }
-      document.getElementById('proposals-table-wrap').innerHTML = `<table class="data-table"><thead><tr><th>Zone</th><th>Proposed H/C</th><th>Coordinator</th><th>Clamped Final</th></tr></thead><tbody>${rows}</tbody></table>`;
-      document.getElementById('ph-coord-flag').textContent = t.coordinator_constrained ? 'Conflict resolved' : '';
-
-      document.getElementById('strategy-content').innerHTML = `<div class="strategy-tag">${t.strategy.strategy}</div><div class="strategy-reasoning">${t.strategy.reasoning}</div>`;
-
-      let safeHtml = '';
-      for (const [z,ov] of Object.entries(t.comfort_overrides||{})) {
-        safeHtml += `<div class="alert-strip err-strip"><div class="alert-strip-title">Override · ${z}</div><div class="alert-strip-body">${ov.reason}</div></div>`;
-      }
-      for (const [z,reason] of Object.entries(t.guardrail_clamps||{})) {
-        safeHtml += `<div class="alert-strip warn-strip"><div class="alert-strip-title">Clamp · ${z}</div><div class="alert-strip-body">${reason}</div></div>`;
-      }
-      if (!safeHtml) safeHtml = '<div style="font-size:0.85rem;color:var(--text-muted);font-style:italic;">No interventions this tick.</div>';
-      document.getElementById('safety-content').innerHTML = safeHtml;
-    }
-
-    /* ── CHARTS ── */
-    function drawCharts() {
-      if (!DATA || !document.getElementById('view-dashboard').classList.contains('active')) return;
-      drawChart('chart-energy', DATA.ticks.map(t => t.facility_total_kw), {
-        line:'#D4CFC6', fill:'rgba(212,207,198,0.06)', marker: currentTick,
-        thresholdY: DATA.ticks[currentTick].strategy.peak_demand_cap_kw
-      });
-      drawChart('chart-pmv', DATA.ticks.map(t => t.zones.reduce((s,z)=>s+z.pmv,0)/t.zones.length), {
-        line:'#7A9E7A', fill:'rgba(122,158,122,0.06)', marker: currentTick,
-        bandMin:-0.5, bandMax:0.5
-      });
-    }
-
-    function drawChart(id, data, opts) {
-      const canvas = document.getElementById(id); if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      const dpr = window.devicePixelRatio || 1;
-      const rect = canvas.parentElement.getBoundingClientRect();
-      canvas.width = rect.width * dpr; canvas.height = rect.height * dpr;
-      ctx.scale(dpr, dpr);
-      const W = rect.width, H = rect.height;
-      ctx.clearRect(0,0,W,H);
-
-      const pad = {t:10,r:10,b:18,l:32};
-      const pw = W-pad.l-pad.r, ph = H-pad.t-pad.b;
-      const yMin = opts.bandMin!==undefined ? Math.min(Math.min(...data)*1.05,opts.bandMin*1.4) : Math.min(...data)*0.9;
-      const yMax = opts.bandMax!==undefined ? Math.max(Math.max(...data)*1.05,opts.bandMax*1.4) : Math.max(...data)*1.1;
-      const xs = i => pad.l + (i/(data.length-1))*pw;
-      const ys = v => pad.t + ph - ((v-yMin)/(yMax-yMin))*ph;
-
-      // Grid
-      ctx.strokeStyle='#1A1A1A'; ctx.lineWidth=1;
-      for (let i=0;i<=4;i++) {
-        const y = pad.t+(ph/4)*i;
-        ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(W-pad.r,y); ctx.stroke();
-        ctx.fillStyle='#4A4540'; ctx.font='10px Inter'; ctx.textAlign='right';
-        ctx.fillText((yMax-(i/4)*(yMax-yMin)).toFixed(1), pad.l-5, y+3);
-      }
-
-      // Comfort band
-      if (opts.bandMin!==undefined) {
-        ctx.fillStyle='rgba(122,158,122,0.06)';
-        ctx.fillRect(pad.l, ys(opts.bandMax), pw, ys(opts.bandMin)-ys(opts.bandMax));
-      }
-
-      // Threshold
-      if (opts.thresholdY!==undefined) {
-        ctx.strokeStyle='rgba(184,154,90,0.35)'; ctx.lineWidth=1; ctx.setLineDash([4,4]);
-        ctx.beginPath(); ctx.moveTo(pad.l,ys(opts.thresholdY)); ctx.lineTo(W-pad.r,ys(opts.thresholdY)); ctx.stroke();
-        ctx.setLineDash([]);
-      }
-
-      // Area fill
-      ctx.beginPath(); ctx.moveTo(xs(0),ys(data[0]));
-      for (let i=1;i<data.length;i++) ctx.lineTo(xs(i),ys(data[i]));
-      ctx.lineTo(xs(data.length-1),pad.t+ph); ctx.lineTo(xs(0),pad.t+ph);
-      ctx.closePath(); ctx.fillStyle=opts.fill; ctx.fill();
-
-      // Line
-      ctx.beginPath(); ctx.moveTo(xs(0),ys(data[0]));
-      for (let i=1;i<data.length;i++) ctx.lineTo(xs(i),ys(data[i]));
-      ctx.strokeStyle=opts.line; ctx.lineWidth=1.5; ctx.stroke();
-
-      // Marker
-      if (opts.marker!==undefined) {
-        const mx = xs(opts.marker);
-        ctx.strokeStyle='#2A2A2A'; ctx.lineWidth=1; ctx.setLineDash([2,3]);
-        ctx.beginPath(); ctx.moveTo(mx,pad.t); ctx.lineTo(mx,pad.t+ph); ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.beginPath(); ctx.arc(mx,ys(data[opts.marker]),3.5,0,Math.PI*2);
-        ctx.fillStyle=opts.line; ctx.fill();
-      }
-    }
-  </script>
+    </script>
 </body>
 </html>
