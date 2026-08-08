@@ -307,6 +307,137 @@ def main():
             })
             print(f"  [{sim_time}] EVENT: Comfort override on PERIMETER_ZN_3 (PMV -0.62)")
 
+        # --- Generate workflow events for dashboard ---
+        base_ts = f"2024-07-15T{hour_int:02d}:{minute:02d}"
+        wf_events = []
+        t_offset = 0.0
+
+        # Perception layer always runs
+        perc_dur = round(random.uniform(0.1, 0.3), 2)
+        wf_events.append({
+            'agent': 'State Compressor',
+            'layer': 'Perception',
+            'status': 'COMPLETED',
+            'start_s': t_offset,
+            'duration_s': perc_dur,
+            'input_summary': f'Raw sensor data: {len(ZONES)} zones, outdoor={outdoor}C',
+            'output_summary': f'Compressed 30-min state summary with {len(anomalies)} anomalies'
+        })
+        t_offset += perc_dur
+
+        if anomalies:
+            anom_dur = round(random.uniform(0.05, 0.15), 2)
+            wf_events.append({
+                'agent': 'Anomaly Detector',
+                'layer': 'Perception',
+                'status': 'COMPLETED',
+                'start_s': t_offset,
+                'duration_s': anom_dur,
+                'input_summary': f'Zone readings for {len(ZONES)} zones',
+                'output_summary': f'Flagged {len(anomalies)} anomalies: {anomalies[0]["message"][:60]}...'
+            })
+            t_offset += anom_dur
+        else:
+            wf_events.append({
+                'agent': 'Anomaly Detector',
+                'layer': 'Perception',
+                'status': 'COMPLETED',
+                'start_s': t_offset,
+                'duration_s': round(random.uniform(0.05, 0.1), 2),
+                'input_summary': f'Zone readings for {len(ZONES)} zones',
+                'output_summary': 'No anomalies detected'
+            })
+            t_offset += wf_events[-1]['duration_s']
+
+        # Planner runs every 12 ticks (6 hours)
+        planner_ran = (tick % 12 == 0)
+        if planner_ran:
+            plan_dur = round(random.uniform(1.5, 3.0), 2)
+            wf_events.append({
+                'agent': 'Forecast Planner',
+                'layer': 'Planning',
+                'status': 'COMPLETED',
+                'start_s': t_offset,
+                'duration_s': plan_dur,
+                'input_summary': f'Weather forecast (24h), grid carbon ({carbon:.0f} gCO2/kWh), performance history',
+                'output_summary': f'Strategy: {strategy["strategy"]}, peak cap: {strategy["peak_demand_cap_kw"]}kW'
+            })
+            t_offset += plan_dur
+        else:
+            wf_events.append({
+                'agent': 'Forecast Planner',
+                'layer': 'Planning',
+                'status': 'SKIPPED',
+                'start_s': t_offset,
+                'duration_s': 0,
+                'input_summary': 'N/A (runs every 6 hours)',
+                'output_summary': f'Using existing strategy: {strategy["strategy"]}'
+            })
+
+        # 5 Zone Agents run concurrently
+        zone_start = t_offset
+        max_zone_dur = 0
+        for z in ZONES:
+            z_dur = round(random.uniform(1.0, 2.5), 2)
+            max_zone_dur = max(max_zone_dur, z_dur)
+            prop = proposals[z]
+            wf_events.append({
+                'agent': f'Zone Agent ({z})',
+                'layer': 'Reasoning',
+                'status': 'COMPLETED',
+                'start_s': zone_start,
+                'duration_s': z_dur,
+                'input_summary': f'Zone state: {zone_states_dict[z]["temp_c"]}C, PMV={zone_states_dict[z]["pmv"]}, strategy={strategy["mode"]}',
+                'output_summary': f'Proposed H:{prop["heating_c"]}C, C:{prop["cooling_c"]}C',
+                'parallel': True
+            })
+        t_offset = zone_start + max_zone_dur
+
+        # Coordinator
+        coord_dur = round(random.uniform(1.5, 3.0), 2)
+        wf_events.append({
+            'agent': 'Coordinator',
+            'layer': 'Reasoning',
+            'status': 'COMPLETED',
+            'start_s': t_offset,
+            'duration_s': coord_dur,
+            'input_summary': f'5 zone proposals, facility={facility_kw}kW, cap={strategy.get("peak_demand_cap_kw", 50)}kW',
+            'output_summary': f'{"CONFLICT RESOLVED: " if was_constrained else ""}{coord_reasoning[:80]}',
+            'had_conflict': was_constrained
+        })
+        t_offset += coord_dur
+
+        # Comfort Auditor
+        has_override = len(comfort_overrides) > 0
+        audit_dur = round(random.uniform(0.8, 1.5), 2)
+        pmv_summary = ', '.join(f"{z['name']}: {z['pmv']}" for z in zone_states)
+        wf_events.append({
+            'agent': 'Comfort Auditor',
+            'layer': 'Safety',
+            'status': 'COMPLETED',
+            'start_s': t_offset,
+            'duration_s': audit_dur,
+            'input_summary': f'PMVs: {pmv_summary}',
+            'output_summary': f'OVERRIDE ISSUED on {list(comfort_overrides.keys())}' if has_override else 'All zones within comfort band. No overrides.',
+            'issued_override': has_override
+        })
+        t_offset += audit_dur
+
+        # Guardrail Engine
+        guard_dur = round(random.uniform(0.05, 0.1), 2)
+        wf_events.append({
+            'agent': 'Guardrail Engine',
+            'layer': 'Safety',
+            'status': 'COMPLETED',
+            'start_s': t_offset,
+            'duration_s': guard_dur,
+            'input_summary': f'Coordinator decision for {len(coord_decision)} zones',
+            'output_summary': f'{len(clamp_reasons)} clamps applied' if clamp_reasons else 'All setpoints within safe bounds'
+        })
+        t_offset += guard_dur
+
+        total_workflow_duration = round(t_offset, 2)
+
         # --- Assemble tick record ---
         state_record = {
             'sim_time': sim_time,
@@ -337,7 +468,9 @@ def main():
             'guardrail_clamps': clamp_reasons,
             'clamped_setpoints': clamped,
             'comfort_overrides': comfort_overrides,
-            'events': events
+            'events': events,
+            'workflow_events': wf_events,
+            'workflow_duration_s': total_workflow_duration
         }
 
         all_ticks.append(tick_record)
