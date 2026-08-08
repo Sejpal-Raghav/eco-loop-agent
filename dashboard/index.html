@@ -1,245 +1,980 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eco-Loop — The HVAC AI Revolution</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eco-Loop — Cognitive Building Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --color-amber: #ffc65c;
+    --color-amber-dim: rgba(255, 198, 92, 0.2);
+    --color-navy: #18293b;
+    --color-teal: #2db39d;
+    --color-emerald: #4ade80;
+    --color-bg-glass: rgba(10, 14, 23, 0.75);
+    --color-border-glass: rgba(255, 255, 255, 0.1);
+    --color-text-main: #f8fafc;
+    --color-text-muted: #94a3b8;
+  }
 
-    <style>
-        :root {
-            --bg-page:      #0D0E0E;
-            --text-primary:   #F4F1ED;
-            --text-secondary: #C3C0B8;
-            --text-muted:     #8C8982;
-            --accent:         #D4CFC6;
-            --accent-glow:    #C8B880;
-            --font: 'Inter', system-ui, -apple-system, sans-serif;
-        }
+  body, html {
+    margin: 0; padding: 0; width: 100%; height: 100%;
+    overflow: hidden; background-color: #05070a;
+    font-family: 'Inter', sans-serif;
+  }
+  
+  /* --- THREE.JS BACKGROUND --- */
+  #bg-canvas-container { position: fixed; inset: 0; z-index: 0; }
+  #cursor-glow {
+    position: fixed; top: 0; left: 0; width: 260px; height: 260px;
+    margin-left: -130px; margin-top: -130px; border-radius: 50%;
+    pointer-events: none; z-index: 5; opacity: 0;
+    background: radial-gradient(circle, rgba(255,198,92,0.10) 0%, rgba(255,198,92,0) 70%);
+    transition: opacity 0.4s ease;
+    will-change: transform;
+  }
+  
+  #loading-veil {
+    position: fixed; inset: 0; z-index: 50; background: #05070a;
+    display: flex; align-items: center; justify-content: center;
+    transition: opacity 1s ease;
+  }
+  #loading-veil span {
+    color: rgba(255,198,92,0.6); font-size: 0.75rem; letter-spacing: 0.3em;
+    text-transform: uppercase; font-weight: 300; font-family: 'JetBrains Mono', monospace;
+  }
 
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: var(--font);
-            background: var(--bg-page);
-            color: var(--text-secondary);
-            height: 100vh;
-            overflow: hidden;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+  /* --- UI LAYOUT --- */
+  .ui-layer {
+    position: relative; z-index: 10; height: 100vh; width: 100%;
+    display: flex; justify-content: space-between;
+    pointer-events: none; /* Let clicks pass through to canvas where empty */
+  }
 
-        /* ── BACKGROUND ANIMATION ── */
-        .city-bg {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 60vh;
-            z-index: 1;
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-            gap: 1%;
-            opacity: 0.15;
-            pointer-events: none;
-        }
+  /* SIDEBAR CTA */
+  .sidebar-cta {
+    position: absolute;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 320px;
+    background: var(--color-bg-glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--color-amber-dim);
+    border-radius: 16px;
+    padding: 2rem;
+    pointer-events: auto;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 20px var(--color-amber-dim);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .sidebar-cta:hover {
+    transform: translateY(-50%) scale(1.02);
+    box-shadow: 0 25px 50px rgba(0,0,0,0.6), 0 0 30px rgba(255, 198, 92, 0.3);
+  }
 
-        .building {
-            width: 8%;
-            background: #1A1C1C;
-            border-top-left-radius: 4px;
-            border-top-right-radius: 4px;
-            position: relative;
-            display: flex;
-            flex-wrap: wrap;
-            padding: 1rem 0.5rem;
-            align-content: flex-start;
-            gap: 4px;
-        }
+  .cta-icon {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: rgba(255, 198, 92, 0.1);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--color-amber);
+    margin-bottom: -0.5rem;
+  }
 
-        .window {
-            width: calc(33% - 4px);
-            height: 12px;
-            background: #0D0E0E;
-            border-radius: 2px;
-            transition: background 0.5s;
-        }
+  .cta-title { font-size: 1.25rem; font-weight: 600; color: var(--color-text-main); }
+  .cta-desc { font-size: 0.9rem; color: var(--color-text-muted); line-height: 1.6; }
+  
+  .cta-button {
+    background: var(--color-amber);
+    color: #000;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+    transition: background 0.2s;
+    box-shadow: 0 4px 15px rgba(255, 198, 92, 0.2);
+  }
+  .cta-button:hover { background: #ffdf8c; }
 
-        .window.lit {
-            background: var(--accent-glow);
-            box-shadow: 0 0 10px var(--accent-glow);
-        }
+  /* MAIN SCROLLABLE CONTENT */
+  .content-scroll {
+    height: 100vh;
+    width: 55%;
+    max-width: 800px;
+    overflow-y: auto;
+    padding: 40px 40px 100px 60px;
+    pointer-events: auto;
+    background: linear-gradient(90deg, rgba(5, 7, 10, 0.9) 0%, rgba(5, 7, 10, 0.6) 70%, transparent 100%);
+    backdrop-filter: blur(4px);
+  }
+  
+  /* Scrollbar */
+  .content-scroll::-webkit-scrollbar { width: 6px; }
+  .content-scroll::-webkit-scrollbar-track { background: transparent; }
+  .content-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
 
-        /* Gradient overlay to fade buildings out at top */
-        .gradient-mask {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(to bottom, var(--bg-page) 0%, transparent 100%);
-            z-index: 2;
-            pointer-events: none;
-        }
+  .hero-header { margin-top: 10vh; margin-bottom: 4rem; }
+  .tag { font-size: 0.85rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--color-amber); font-weight: 600; margin-bottom: 1rem; display: block; }
+  h1 { font-size: clamp(3rem, 5vw, 4.5rem); margin: 0 0 1rem; font-weight: 700; letter-spacing: -0.03em; color: #fff; line-height: 1.1; }
+  .subtitle { font-size: 1.25rem; font-weight: 300; letter-spacing: 0.02em; color: var(--color-text-muted); line-height: 1.6; max-width: 90%; }
 
-        /* ── CONTENT ── */
-        .content {
-            position: relative;
-            z-index: 10;
-            max-width: 760px;
-            padding: 3rem;
-            text-align: center;
-            background: rgba(13, 14, 14, 0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 24px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-            transform: translateY(20px);
-            opacity: 0;
-        }
+  section { margin-bottom: 4rem; }
+  h2 { font-size: 2rem; font-weight: 600; color: #fff; margin-bottom: 1.5rem; letter-spacing: -0.01em; display: flex; align-items: center; gap: 0.75rem; }
+  h2::before { content: ""; display: block; width: 24px; height: 3px; background: var(--color-teal); border-radius: 2px; }
+  
+  p { font-size: 1.1rem; line-height: 1.8; color: var(--color-text-muted); margin-bottom: 1.5rem; }
+  strong { color: var(--color-text-main); font-weight: 600; }
 
-        .tag {
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.2em;
-            color: var(--accent-glow);
-            margin-bottom: 1.5rem;
-            display: inline-block;
-        }
+  /* Tech Stack Grid */
+  .tech-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 2rem; }
+  .tech-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--color-border-glass);
+    border-radius: 12px;
+    padding: 1.5rem;
+  }
+  .tech-card h3 { color: var(--color-teal); font-size: 1.1rem; margin: 0 0 0.5rem 0; font-family: 'JetBrains Mono', monospace; }
+  .tech-card p { font-size: 0.9rem; margin: 0; line-height: 1.5; }
 
-        h1 {
-            font-size: 3rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            line-height: 1.2;
-            letter-spacing: -0.03em;
-            margin-bottom: 1.5rem;
-        }
+  /* Architecture Diagram */
+  .arch-diagram {
+    display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem;
+  }
+  .arch-layer {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--color-border-glass);
+    border-radius: 12px;
+    padding: 1.5rem;
+    position: relative;
+    border-left: 4px solid var(--layer-color);
+  }
+  .arch-layer:not(:last-child)::after {
+    content: "↓";
+    position: absolute;
+    bottom: -1.2rem;
+    left: 2rem;
+    color: var(--color-border-glass);
+    font-size: 1.2rem;
+  }
+  .arch-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 0.75rem; }
+  .arch-title { font-size: 1.2rem; font-weight: 600; color: #fff; margin: 0; }
+  .arch-type { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--layer-color); font-weight: 600; }
+  .arch-desc { font-size: 0.95rem; margin: 0; }
 
-        p {
-            font-size: 1.15rem;
-            color: var(--text-secondary);
-            line-height: 1.7;
-            margin-bottom: 2.5rem;
-        }
-
-        .cta-btn {
-            display: inline-block;
-            background: var(--text-primary);
-            color: #0A0A0A;
-            text-decoration: none;
-            font-size: 0.95rem;
-            font-weight: 600;
-            padding: 1.1rem 2.5rem;
-            border-radius: 8px;
-            border: 1px solid var(--text-primary);
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(244, 241, 237, 0.1);
-        }
-
-        .cta-btn:hover {
-            background: transparent;
-            color: var(--text-primary);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(244, 241, 237, 0.15);
-        }
-        
-        .cta-subtext {
-            display: block;
-            margin-top: 1rem;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
-
-        @media (max-width: 768px) {
-            h1 { font-size: 2.2rem; }
-            p { font-size: 1rem; }
-            .content { padding: 2rem; margin: 1rem; }
-        }
-    </style>
+  @media (max-width: 1100px) {
+    .content-scroll { width: 100%; max-width: 100%; padding: 30px; background: rgba(5,7,10,0.8); }
+    .sidebar-cta { position: relative; right: auto; top: auto; transform: none; width: 100%; margin-top: 2rem; margin-bottom: 4rem; }
+    .sidebar-cta:hover { transform: none; }
+    .ui-layer { display: block; overflow-y: auto; }
+    .content-scroll { height: auto; overflow: visible; }
+  }
+</style>
 </head>
 <body>
 
-    <!-- Background Buildings -->
-    <div class="city-bg" id="city"></div>
-    <div class="gradient-mask"></div>
+<div id="loading-veil"><span>Initializing systems…</span></div>
+<div id="bg-canvas-container"></div>
+<div id="cursor-glow"></div>
 
-    <!-- Main Content -->
-    <div class="content">
-        <span class="tag">The Problem</span>
-        <h1>Commercial Buildings are Wasting 30% of their Energy.</h1>
-        <p>
-            Today's HVAC systems are static and disconnected. They rely on fixed schedules and primitive thermostats, unable to dynamically negotiate energy usage across massive facilities. The result? High costs, excessive carbon emissions, and uncomfortable environments.
-            <br><br>
-            <strong>Eco-Loop</strong> solves this using a multi-agent cognitive architecture. Autonomous LLM agents coordinate to predict, plan, and precisely distribute energy across the building in real-time.
-        </p>
-        
-        <a href="app.html?experience=voiceover" class="cta-btn">
-            Skip reading. Listen to the Voiceover.
-        </a>
-        <span class="cta-subtext">Clicking will start the simulation and audio playback automatically.</span>
+<div class="ui-layer">
+  
+  <!-- Left/Center Scrollable Content -->
+  <div class="content-scroll">
+    <div class="hero-header">
+      <span class="tag">Cognitive Building Intelligence</span>
+      <h1>Eco-Loop</h1>
+      <div class="subtitle">A swarm of autonomous LLM agents thinking, negotiating, and optimizing your building's energy in real time.</div>
     </div>
 
-    <script>
-        // Generate City Background
-        const city = document.getElementById('city');
-        const buildingHeights = [30, 50, 40, 70, 45, 60, 35, 55, 40];
-        
-        buildingHeights.forEach((h, i) => {
-            const b = document.createElement('div');
-            b.className = 'building';
-            b.style.height = `${h}vh`;
-            
-            // Add windows
-            const numWindows = Math.floor(h / 2); // rough estimate
-            for (let j=0; j<numWindows; j++) {
-                const w = document.createElement('div');
-                w.className = 'window';
-                b.appendChild(w);
-            }
-            city.appendChild(b);
-        });
+    <section>
+      <h2>The Problem</h2>
+      <p>Commercial buildings account for a massive portion of global energy consumption. The fundamental issue is that modern HVAC systems are incredibly static. They rely on rigid schedules, simple if-then rules, and isolated thermostats that do not communicate with one another.</p>
+      <p>Because these systems cannot predict weather changes, track grid carbon intensity, or negotiate energy usage dynamically across different zones in real-time, they end up <strong>wasting about 30% of their energy</strong>. This leads to high costs and an unnecessary environmental impact.</p>
+    </section>
 
-        // Intro Animation for Content
-        anime({
-            targets: '.content',
-            translateY: [40, 0],
-            opacity: [0, 1],
-            duration: 1200,
-            easing: 'easeOutCubic',
-            delay: 300
-        });
+    <section>
+      <h2 style="--color-teal: var(--color-emerald)">The Solution</h2>
+      <p>Eco-Loop solves this by replacing static rules with a dynamic, multi-agent artificial intelligence architecture. Instead of dumb thermostats, the building is controlled by a swarm of autonomous agents that act like a digital nervous system.</p>
+      <p>These agents perceive their environment, negotiate with one another, and make complex decisions to optimize comfort while strictly capping energy demand and reducing carbon emissions.</p>
+    </section>
 
-        // Building Lights Animation Loop
-        const allWindows = document.querySelectorAll('.window');
-        
-        function animateLights() {
-            // Randomly turn off some lights
-            allWindows.forEach(w => w.classList.remove('lit'));
-            
-            // Randomly turn on some lights
-            const numLightsToOn = Math.floor(allWindows.length * 0.15);
-            for(let i=0; i<numLightsToOn; i++) {
-                const randomWindow = allWindows[Math.floor(Math.random() * allWindows.length)];
-                randomWindow.classList.add('lit');
-            }
+    <section>
+      <h2 style="--color-teal: var(--color-amber)">The Tech Stack</h2>
+      <div class="tech-grid">
+        <div class="tech-card">
+          <h3>EnergyPlus 26.1</h3>
+          <p>The industry standard for building physics and thermodynamics simulation.</p>
+        </div>
+        <div class="tech-card">
+          <h3>qwen2.5:7b-instruct</h3>
+          <p>Local, high-speed Large Language Models acting as the brains of our agents.</p>
+        </div>
+        <div class="tech-card">
+          <h3>FastMCP Protocol</h3>
+          <p>Secure Model Context Protocol allowing agents to execute tools and share state.</p>
+        </div>
+        <div class="tech-card">
+          <h3>Vanilla JS / Three.js</h3>
+          <p>Zero-dependency, high-performance visualization engines for real-time monitoring.</p>
+        </div>
+      </div>
+    </section>
 
-            anime({
-                targets: '.lit',
-                opacity: [0.3, 1],
-                direction: 'alternate',
-                duration: 1500,
-                easing: 'easeInOutSine',
-                complete: () => {
-                    setTimeout(animateLights, 1000);
-                }
-            });
-        }
-        
-        setTimeout(animateLights, 500);
+    <section>
+      <h2 style="--color-teal: #3b82f6">Architecture Details</h2>
+      <p>Eco-Loop operates on a strict, 5-layer hierarchical workflow executed every simulation tick (30 minutes).</p>
+      
+      <div class="arch-diagram">
+        <div class="arch-layer" style="--layer-color: #94a3b8">
+          <div class="arch-header">
+            <h4 class="arch-title">1. Perception Layer</h4>
+            <span class="arch-type">Always Active</span>
+          </div>
+          <p class="arch-desc">Reads raw 1-minute sensor data. The <strong>State Compressor</strong> condenses this into 30-minute snapshots, while the <strong>Anomaly Detector</strong> filters out broken or impossible sensor readings.</p>
+        </div>
 
-    </script>
+        <div class="arch-layer" style="--layer-color: #c084fc">
+          <div class="arch-header">
+            <h4 class="arch-title">2. Memory Layer</h4>
+            <span class="arch-type">Persistent</span>
+          </div>
+          <p class="arch-desc">Injects the results of past decisions and feedback into the current prompts. Agents read this feedback and self-correct on the fly without needing retraining.</p>
+        </div>
+
+        <div class="arch-layer" style="--layer-color: #3b82f6">
+          <div class="arch-header">
+            <h4 class="arch-title">3. Planning Layer</h4>
+            <span class="arch-type">Every 6 Hours</span>
+          </div>
+          <p class="arch-desc">The <strong>Forecast Planner</strong> analyzes 24-hour weather and grid carbon curves to set a high-level strategy (e.g. pre-cooling) and enforces a strict peak energy cap (kW) for the facility.</p>
+        </div>
+
+        <div class="arch-layer" style="--layer-color: var(--color-emerald)">
+          <div class="arch-header">
+            <h4 class="arch-title">4. Reasoning Layer</h4>
+            <span class="arch-type">Every Tick</span>
+          </div>
+          <p class="arch-desc">Five independent <strong>Zone Agents</strong> propose setpoints in parallel. A master <strong>Coordinator</strong> collects these proposals and negotiates compromises if total demand exceeds the Planner's cap.</p>
+        </div>
+
+        <div class="arch-layer" style="--layer-color: #ef4444">
+          <div class="arch-header">
+            <h4 class="arch-title">5. Safety Layer</h4>
+            <span class="arch-type">Hard Veto</span>
+          </div>
+          <p class="arch-desc">The <strong>Comfort Auditor</strong> issues emergency overrides if PMV bounds are violated. The deterministic <strong>Guardrail Engine</strong> clamps sudden temperature spikes before commands hit the actuators.</p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Sidebar CTA -->
+  <div class="sidebar-cta">
+    <div class="cta-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
+    </div>
+    <div class="cta-content">
+      <div class="cta-title">Audio Experience</div>
+      <div class="cta-desc">Don't want to read? Launch the dashboard and listen to the voiceover while the simulation runs autonomously.</div>
+    </div>
+    <a href="app.html?experience=voiceover" class="cta-button">
+      Skip Reading. Listen to Voiceover.
+    </a>
+  </div>
+
+</div>
+
+<!-- BACKGROUND SCRIPT -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function () {
+"use strict";
+
+/* ============================================================
+   0. CONFIG — every tunable constant lives here
+   ============================================================ */
+const CONFIG = {
+  bgColor: 0x05070a,
+  buildingColor: 0x18293b,
+  energyColor: new THREE.Color(0xffc65c),
+  energyColorHex: 0xffc65c,
+
+  buildingWidth: 8,
+  buildingDepth: 8,
+  buildingHeight: 26,
+
+  windowCols: 6,
+  windowRows: 14,
+  windowActiveDensity: 0.10,   // fraction of windows lit at a resting moment
+  windowFlickerSpeed: 0.35,    // how fast the noise field evolves
+
+  dataLineCount: 6,
+  dataLineSpeedMin: 2.4,
+  dataLineSpeedMax: 5.2,
+
+  moteCount: 260,
+  moteFieldRadius: 34,
+  moteFieldHeight: 34,
+
+  pulseWaveInterval: 7.5,      // seconds between sweep events
+  pulseWaveDuration: 2.6,
+  pulseWaveThickness: 3.2,
+
+  bloomThreshold: 0.35,
+  bloomStrength: 1.35,
+  bloomBlurIterations: 3,
+  bloomResolutionScale: 0.5,   // render bloom passes at half-res for perf
+
+  cameraBaseDistance: 62,
+  cameraBaseY: 15,
+  cameraLookY: 12,
+  cameraIdleOrbitSpeed: 0.035,
+  cameraNoiseInfluence: 2.2,
+  cameraMouseInfluence: 0.45
+};
+
+/* ============================================================
+   1. UTILITIES — easing + hand-written fractal noise
+   ============================================================ */
+const Ease = {
+  linear: (t) => t,
+  inOutCubic: (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2),
+  inOutSine: (t) => -(Math.cos(Math.PI * t) - 1) / 2,
+  outElastic: (t) => {
+    const c4 = (2 * Math.PI) / 3;
+    return t === 0 ? 0 : t === 1 ? 1
+      : Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1;
+  },
+  smoothstep: (edge0, edge1, x) => {
+    const t = THREE.MathUtils.clamp((x - edge0) / (edge1 - edge0), 0, 1);
+    return t * t * (3 - 2 * t);
+  }
+};
+
+function hashSeed(x, y) {
+  const s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453123;
+  return s - Math.floor(s);
+}
+
+function fbmNoise1D(x, octaves = 4, lacunarity = 2.01, gain = 0.5) {
+  let amplitude = 0.5;
+  let frequency = 1.0;
+  let sum = 0;
+  for (let i = 0; i < octaves; i++) {
+    sum += amplitude * Math.sin(x * frequency + i * 12.9898);
+    frequency *= lacunarity;
+    amplitude *= gain;
+  }
+  return sum;
+}
+
+function fbmNoise2D(x, y, octaves = 3) {
+  let amplitude = 0.5;
+  let freq = 1.0;
+  let sum = 0;
+  for (let i = 0; i < octaves; i++) {
+    const angle = (x * freq * 1.7 + y * freq * 2.3) + i * 4.567;
+    sum += amplitude * (Math.sin(angle) * 0.5 + Math.sin(angle * 1.37 + 1.1) * 0.5);
+    freq *= 1.93;
+    amplitude *= 0.55;
+  }
+  return sum;
+}
+
+/* ============================================================
+   2. SCENE / CAMERA / RENDERER
+   ============================================================ */
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(CONFIG.bgColor);
+scene.fog = new THREE.FogExp2(CONFIG.bgColor, 0.014);
+
+const camera = new THREE.PerspectiveCamera(
+  45, window.innerWidth / window.innerHeight, 1, 500
+);
+// Offset camera position to right to make room for UI on the left
+const baseCamPos = new THREE.Vector3(20, CONFIG.cameraBaseY, CONFIG.cameraBaseDistance);
+camera.position.copy(baseCamPos);
+camera.lookAt(20, CONFIG.cameraLookY, 0);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+renderer.autoClear = false;
+document.getElementById('bg-canvas-container').appendChild(renderer.domElement);
+
+const world = new THREE.Group();
+// Shift the entire world slightly to the right to balance with the left-side UI
+world.position.x = 10;
+scene.add(world);
+
+/* ============================================================
+   3. LIGHTING
+   ============================================================ */
+scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+directionalLight.position.set(40, 80, 30);
+world.add(directionalLight);
+
+const cursorLight = new THREE.PointLight(CONFIG.energyColorHex, 3, 60, 2);
+cursorLight.position.set(0, 14, 15);
+world.add(cursorLight);
+
+/* ============================================================
+   4. THE BUILDING
+   ============================================================ */
+const buildingGroup = new THREE.Group();
+world.add(buildingGroup);
+
+const towerGeometry = new THREE.BoxGeometry(
+  CONFIG.buildingWidth, CONFIG.buildingHeight, CONFIG.buildingDepth
+);
+const towerMaterial = new THREE.MeshStandardMaterial({
+  color: CONFIG.buildingColor, roughness: 0.55, metalness: 0.35, flatShading: true
+});
+const tower = new THREE.Mesh(towerGeometry, towerMaterial);
+tower.position.y = CONFIG.buildingHeight / 2;
+buildingGroup.add(tower);
+
+const edgesGeo = new THREE.EdgesGeometry(towerGeometry);
+const edgeLines = new THREE.LineSegments(
+  edgesGeo,
+  new THREE.LineBasicMaterial({ color: CONFIG.energyColorHex, transparent: true, opacity: 0.2 })
+);
+edgeLines.position.copy(tower.position);
+buildingGroup.add(edgeLines);
+
+/* ============================================================
+   5. INSTANCED WINDOW SYSTEM
+   ============================================================ */
+const windowBaseGeo = new THREE.PlaneGeometry(0.45, 0.7);
+
+const facades = [
+  { axis: 'z', sign: 1 },
+  { axis: 'z', sign: -1 },
+  { axis: 'x', sign: 1 },
+  { axis: 'x', sign: -1 }
+];
+
+const totalWindows = facades.length * CONFIG.windowCols * CONFIG.windowRows;
+const instancedWindowGeo = new THREE.InstancedBufferGeometry();
+instancedWindowGeo.index = windowBaseGeo.index;
+instancedWindowGeo.attributes.position = windowBaseGeo.attributes.position;
+instancedWindowGeo.attributes.uv = windowBaseGeo.attributes.uv;
+
+const seedArray = new Float32Array(totalWindows);
+const rowArray = new Float32Array(totalWindows);
+const offsetMatrix = new Float32Array(totalWindows * 16);
+
+const colSpacing = CONFIG.buildingWidth / (CONFIG.windowCols + 1);
+const rowSpacing = CONFIG.buildingHeight / (CONFIG.windowRows + 1);
+
+let wi = 0;
+const dummyObj = new THREE.Object3D();
+facades.forEach((facade) => {
+  for (let r = 0; r < CONFIG.windowRows; r++) {
+    for (let c = 0; c < CONFIG.windowCols; c++) {
+      const along = -CONFIG.buildingWidth / 2 + colSpacing * (c + 1);
+      const y = rowSpacing * (r + 1);
+
+      if (facade.axis === 'z') {
+        dummyObj.position.set(along, y, (CONFIG.buildingDepth / 2 + 0.02) * facade.sign);
+        dummyObj.rotation.set(0, facade.sign < 0 ? Math.PI : 0, 0);
+      } else {
+        dummyObj.position.set((CONFIG.buildingWidth / 2 + 0.02) * facade.sign, y, along);
+        dummyObj.rotation.set(0, facade.sign > 0 ? Math.PI / 2 : -Math.PI / 2, 0);
+      }
+      dummyObj.updateMatrix();
+      dummyObj.matrix.toArray(offsetMatrix, wi * 16);
+
+      seedArray[wi] = hashSeed(c + facade.sign * 13.7, r + (facade.axis === 'z' ? 0 : 91.3));
+      rowArray[wi] = y / CONFIG.buildingHeight;
+      wi++;
+    }
+  }
+});
+
+const im0 = new Float32Array(totalWindows * 4);
+const im1 = new Float32Array(totalWindows * 4);
+const im2 = new Float32Array(totalWindows * 4);
+const im3 = new Float32Array(totalWindows * 4);
+for (let i = 0; i < totalWindows; i++) {
+  const base = i * 16;
+  im0.set(offsetMatrix.slice(base, base + 4), i * 4);
+  im1.set(offsetMatrix.slice(base + 4, base + 8), i * 4);
+  im2.set(offsetMatrix.slice(base + 8, base + 12), i * 4);
+  im3.set(offsetMatrix.slice(base + 12, base + 16), i * 4);
+}
+
+instancedWindowGeo.setAttribute('instMatrix0', new THREE.InstancedBufferAttribute(im0, 4));
+instancedWindowGeo.setAttribute('instMatrix1', new THREE.InstancedBufferAttribute(im1, 4));
+instancedWindowGeo.setAttribute('instMatrix2', new THREE.InstancedBufferAttribute(im2, 4));
+instancedWindowGeo.setAttribute('instMatrix3', new THREE.InstancedBufferAttribute(im3, 4));
+instancedWindowGeo.setAttribute('seed', new THREE.InstancedBufferAttribute(seedArray, 1));
+instancedWindowGeo.setAttribute('rowT', new THREE.InstancedBufferAttribute(rowArray, 1));
+instancedWindowGeo.instanceCount = totalWindows;
+
+const windowUniforms = {
+  uTime: { value: 0 },
+  uColor: { value: CONFIG.energyColor },
+  uDensity: { value: CONFIG.windowActiveDensity },
+  uFlickerSpeed: { value: CONFIG.windowFlickerSpeed },
+  uWaveY: { value: -1.0 },
+  uWaveThickness: { value: CONFIG.pulseWaveThickness / CONFIG.buildingHeight }
+};
+
+const windowVertexShader = `
+  attribute vec4 instMatrix0;
+  attribute vec4 instMatrix1;
+  attribute vec4 instMatrix2;
+  attribute vec4 instMatrix3;
+  attribute float seed;
+  attribute float rowT;
+  varying float vSeed;
+  varying float vRowT;
+  varying vec2 vUv;
+  void main() {
+    mat4 instanceMatrix = mat4(instMatrix0, instMatrix1, instMatrix2, instMatrix3);
+    vSeed = seed;
+    vRowT = rowT;
+    vUv = uv;
+    vec4 worldPos = instanceMatrix * vec4(position, 1.0);
+    gl_Position = projectionMatrix * modelViewMatrix * worldPos;
+  }
+`;
+
+const windowFragmentShader = `
+  precision mediump float;
+  uniform float uTime;
+  uniform vec3 uColor;
+  uniform float uDensity;
+  uniform float uFlickerSpeed;
+  uniform float uWaveY;
+  uniform float uWaveThickness;
+  varying float vSeed;
+  varying float vRowT;
+  varying vec2 vUv;
+  float flicker(float seed, float t) {
+    float a = sin(t * 1.0 + seed * 40.0);
+    float b = sin(t * 1.7 + seed * 71.0 + 1.3);
+    float c = sin(t * 0.6 + seed * 13.0 + 2.7);
+    return (a * 0.5 + b * 0.3 + c * 0.2) * 0.5 + 0.5;
+  }
+  void main() {
+    float f = flicker(vSeed, uTime * uFlickerSpeed);
+    float threshold = 1.0 - uDensity;
+    float lit = smoothstep(threshold, threshold + 0.08, f);
+    float waveDist = abs(vRowT - uWaveY);
+    float waveLit = 1.0 - smoothstep(0.0, uWaveThickness, waveDist);
+    lit = max(lit, waveLit);
+    if (lit < 0.02) discard;
+    vec2 centered = vUv - 0.5;
+    float vignette = 1.0 - smoothstep(0.25, 0.5, length(centered));
+    gl_FragColor = vec4(uColor, lit * vignette * 0.9);
+  }
+`;
+
+const windowMaterial = new THREE.ShaderMaterial({
+  uniforms: windowUniforms,
+  vertexShader: windowVertexShader,
+  fragmentShader: windowFragmentShader,
+  transparent: true,
+  depthWrite: false,
+  blending: THREE.AdditiveBlending,
+  side: THREE.DoubleSide
+});
+
+const windowInstancedMesh = new THREE.Mesh(instancedWindowGeo, windowMaterial);
+windowInstancedMesh.frustumCulled = false;
+buildingGroup.add(windowInstancedMesh);
+
+/* ============================================================
+   6. DATA STREAKS
+   ============================================================ */
+function createStreakTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 16; canvas.height = 128;
+  const ctx = canvas.getContext('2d');
+  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  gradient.addColorStop(0.0, 'rgba(255,255,255,0)');
+  gradient.addColorStop(0.65, 'rgba(255,255,255,0.2)');
+  gradient.addColorStop(1.0, 'rgba(255,255,255,1)');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, 16, 128);
+  return new THREE.CanvasTexture(canvas);
+}
+const streakTexture = createStreakTexture();
+
+const dataLines = [];
+for (let i = 0; i < CONFIG.dataLineCount; i++) {
+  const side = Math.random() > 0.5 ? 1 : -1;
+  const x = (Math.random() - 0.5) * CONFIG.buildingWidth * 0.85;
+  const z = (CONFIG.buildingDepth / 2 + 0.05) * side;
+
+  const streakGeo = new THREE.PlaneGeometry(0.12, 3.5);
+  const streakMat = new THREE.MeshBasicMaterial({
+    map: streakTexture, color: CONFIG.energyColorHex, transparent: true,
+    opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false
+  });
+  const streak = new THREE.Mesh(streakGeo, streakMat);
+  streak.position.set(x, 0, z);
+  buildingGroup.add(streak);
+
+  dataLines.push({
+    mesh: streak,
+    y: Math.random() * CONFIG.buildingHeight,
+    baseSpeed: THREE.MathUtils.randFloat(CONFIG.dataLineSpeedMin, CONFIG.dataLineSpeedMax),
+    dir: Math.random() > 0.5 ? 1 : -1,
+    noiseOffset: Math.random() * 100
+  });
+}
+
+/* ============================================================
+   7. AMBIENT DATA MOTES
+   ============================================================ */
+const moteGeo = new THREE.BufferGeometry();
+const motePos = new Float32Array(CONFIG.moteCount * 3);
+const moteSeed = new Float32Array(CONFIG.moteCount);
+for (let i = 0; i < CONFIG.moteCount; i++) {
+  const angle = Math.random() * Math.PI * 2;
+  const radius = 6 + Math.random() * CONFIG.moteFieldRadius;
+  motePos[i * 3 + 0] = Math.cos(angle) * radius;
+  motePos[i * 3 + 1] = Math.random() * CONFIG.moteFieldHeight;
+  motePos[i * 3 + 2] = Math.sin(angle) * radius;
+  moteSeed[i] = Math.random() * 1000;
+}
+moteGeo.setAttribute('position', new THREE.BufferAttribute(motePos, 3));
+moteGeo.setAttribute('seed', new THREE.BufferAttribute(moteSeed, 1));
+
+const moteUniforms = {
+  uTime: { value: 0 },
+  uColor: { value: CONFIG.energyColor }
+};
+
+const moteMaterial = new THREE.ShaderMaterial({
+  uniforms: moteUniforms,
+  transparent: true,
+  depthWrite: false,
+  blending: THREE.AdditiveBlending,
+  vertexShader: `
+    attribute float seed;
+    uniform float uTime;
+    varying float vAlpha;
+    void main() {
+      vec3 p = position;
+      p.x += sin(uTime * 0.15 + seed) * 1.5;
+      p.z += cos(uTime * 0.12 + seed * 1.3) * 1.5;
+      p.y += sin(uTime * 0.2 + seed * 2.1) * 0.8;
+      vAlpha = 0.4 + 0.6 * (sin(uTime * 0.6 + seed) * 0.5 + 0.5);
+      vec4 mv = modelViewMatrix * vec4(p, 1.0);
+      gl_PointSize = (60.0 / -mv.z);
+      gl_Position = projectionMatrix * mv;
+    }
+  `,
+  fragmentShader: `
+    precision mediump float;
+    uniform vec3 uColor;
+    varying float vAlpha;
+    void main() {
+      vec2 c = gl_PointCoord - 0.5;
+      float d = length(c);
+      if (d > 0.5) discard;
+      float falloff = 1.0 - smoothstep(0.0, 0.5, d);
+      gl_FragColor = vec4(uColor, falloff * vAlpha * 0.55);
+    }
+  `
+});
+const moteField = new THREE.Points(moteGeo, moteMaterial);
+world.add(moteField);
+
+/* ============================================================
+   8. GROUND
+   ============================================================ */
+const gridHelper = new THREE.GridHelper(140, 70, CONFIG.buildingColor, CONFIG.buildingColor);
+gridHelper.material.transparent = true;
+gridHelper.material.opacity = 0.15;
+world.add(gridHelper);
+
+/* ============================================================
+   9. CUSTOM BLOOM PIPELINE
+   ============================================================ */
+const orthoCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+const fullscreenTriGeo = new THREE.PlaneGeometry(2, 2);
+
+function makeRenderTarget(scale) {
+  const w = Math.max(1, Math.floor(window.innerWidth * scale));
+  const h = Math.max(1, Math.floor(window.innerHeight * scale));
+  return new THREE.WebGLRenderTarget(w, h, {
+    minFilter: THREE.LinearFilter,
+    magFilter: THREE.LinearFilter,
+    format: THREE.RGBAFormat
+  });
+}
+
+let sceneRT = makeRenderTarget(1.0);
+let brightRT = makeRenderTarget(CONFIG.bloomResolutionScale);
+let blurRTA = makeRenderTarget(CONFIG.bloomResolutionScale);
+let blurRTB = makeRenderTarget(CONFIG.bloomResolutionScale);
+
+const brightPassMaterial = new THREE.ShaderMaterial({
+  uniforms: { tDiffuse: { value: null }, uThreshold: { value: CONFIG.bloomThreshold } },
+  vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`,
+  fragmentShader: `
+    precision mediump float;
+    uniform sampler2D tDiffuse;
+    uniform float uThreshold;
+    varying vec2 vUv;
+    void main() {
+      vec4 texel = texture2D(tDiffuse, vUv);
+      float brightness = dot(texel.rgb, vec3(0.2126, 0.7152, 0.0722));
+      float contribution = smoothstep(uThreshold, uThreshold + 0.2, brightness);
+      gl_FragColor = vec4(texel.rgb * contribution, 1.0);
+    }
+  `
+});
+
+function makeBlurMaterial(direction) {
+  return new THREE.ShaderMaterial({
+    uniforms: {
+      tDiffuse: { value: null },
+      uResolution: { value: new THREE.Vector2(1, 1) },
+      uDirection: { value: direction }
+    },
+    vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`,
+    fragmentShader: `
+      precision mediump float;
+      uniform sampler2D tDiffuse;
+      uniform vec2 uResolution;
+      uniform vec2 uDirection;
+      varying vec2 vUv;
+      void main() {
+        vec2 texel = uDirection / uResolution;
+        vec4 sum = vec4(0.0);
+        sum += texture2D(tDiffuse, vUv - texel * 4.0) * 0.0162162162;
+        sum += texture2D(tDiffuse, vUv - texel * 3.0) * 0.0540540541;
+        sum += texture2D(tDiffuse, vUv - texel * 2.0) * 0.1216216216;
+        sum += texture2D(tDiffuse, vUv - texel * 1.0) * 0.1945945946;
+        sum += texture2D(tDiffuse, vUv)                * 0.2270270270;
+        sum += texture2D(tDiffuse, vUv + texel * 1.0) * 0.1945945946;
+        sum += texture2D(tDiffuse, vUv + texel * 2.0) * 0.1216216216;
+        sum += texture2D(tDiffuse, vUv + texel * 3.0) * 0.0540540541;
+        sum += texture2D(tDiffuse, vUv + texel * 4.0) * 0.0162162162;
+        gl_FragColor = sum;
+      }
+    `
+  });
+}
+const blurMaterialH = makeBlurMaterial(new THREE.Vector2(1, 0));
+const blurMaterialV = makeBlurMaterial(new THREE.Vector2(0, 1));
+
+const compositeMaterial = new THREE.ShaderMaterial({
+  uniforms: {
+    tScene: { value: null },
+    tBloom: { value: null },
+    uStrength: { value: CONFIG.bloomStrength }
+  },
+  vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`,
+  fragmentShader: `
+    precision mediump float;
+    uniform sampler2D tScene;
+    uniform sampler2D tBloom;
+    uniform float uStrength;
+    varying vec2 vUv;
+    void main() {
+      vec4 base = texture2D(tScene, vUv);
+      vec4 bloom = texture2D(tBloom, vUv);
+      gl_FragColor = vec4(base.rgb + bloom.rgb * uStrength, 1.0);
+    }
+  `,
+  transparent: true
+});
+
+const fsQuad = new THREE.Mesh(fullscreenTriGeo, brightPassMaterial);
+const fsScene = new THREE.Scene();
+fsScene.add(fsQuad);
+
+function renderFullscreen(material, target) {
+  fsQuad.material = material;
+  renderer.setRenderTarget(target);
+  renderer.clear();
+  renderer.render(fsScene, orthoCam);
+}
+
+function runBloomPipeline() {
+  renderer.setRenderTarget(sceneRT);
+  renderer.clear();
+  renderer.render(scene, camera);
+
+  brightPassMaterial.uniforms.tDiffuse.value = sceneRT.texture;
+  renderFullscreen(brightPassMaterial, brightRT);
+
+  let readRT = brightRT;
+  let writeRT = blurRTA;
+  for (let i = 0; i < CONFIG.bloomBlurIterations; i++) {
+    blurMaterialH.uniforms.tDiffuse.value = readRT.texture;
+    blurMaterialH.uniforms.uResolution.value.set(readRT.width, readRT.height);
+    renderFullscreen(blurMaterialH, writeRT);
+
+    blurMaterialV.uniforms.tDiffuse.value = writeRT.texture;
+    blurMaterialV.uniforms.uResolution.value.set(writeRT.width, writeRT.height);
+    renderFullscreen(blurMaterialV, blurRTB);
+
+    readRT = blurRTB;
+    writeRT = (writeRT === blurRTA) ? blurRTB : blurRTA;
+  }
+
+  compositeMaterial.uniforms.tScene.value = sceneRT.texture;
+  compositeMaterial.uniforms.tBloom.value = readRT.texture;
+  fsQuad.material = compositeMaterial;
+  renderer.setRenderTarget(null);
+  renderer.clear();
+  renderer.render(fsScene, orthoCam);
+}
+
+/* ============================================================
+   10. INTERACTIVITY
+   ============================================================ */
+const mouse = new THREE.Vector2(0, 0);
+const mouseSmoothed = new THREE.Vector2(0, 0);
+const raycaster = new THREE.Raycaster();
+const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+const lightTarget = new THREE.Vector3(0, 14, 15);
+const rayHit = new THREE.Vector3();
+const cursorGlowEl = document.getElementById('cursor-glow');
+
+function updatePointer(clientX, clientY) {
+  mouse.x = (clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(clientY / window.innerHeight) * 2 + 1;
+  cursorGlowEl.style.transform = `translate(${clientX}px, ${clientY}px)`;
+  cursorGlowEl.style.opacity = '1';
+}
+window.addEventListener('mousemove', (e) => updatePointer(e.clientX, e.clientY));
+window.addEventListener('mouseleave', () => { cursorGlowEl.style.opacity = '0'; });
+window.addEventListener('touchmove', (e) => {
+  if (e.touches[0]) updatePointer(e.touches[0].clientX, e.touches[0].clientY);
+}, { passive: true });
+
+/* ============================================================
+   11. PULSE WAVE STATE
+   ============================================================ */
+let nextPulseAt = 3.0;
+let pulseActiveUntil = -1;
+let pulseStartTime = 0;
+
+/* ============================================================
+   12. RESIZE + VISIBILITY
+   ============================================================ */
+let resizeTimeout = null;
+function handleResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+
+  sceneRT.dispose(); brightRT.dispose(); blurRTA.dispose(); blurRTB.dispose();
+  sceneRT = makeRenderTarget(1.0);
+  brightRT = makeRenderTarget(CONFIG.bloomResolutionScale);
+  blurRTA = makeRenderTarget(CONFIG.bloomResolutionScale);
+  blurRTB = makeRenderTarget(CONFIG.bloomResolutionScale);
+}
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimeout);
+  resizeTimeout = setTimeout(handleResize, 120);
+});
+
+let isTabVisible = true;
+document.addEventListener('visibilitychange', () => {
+  isTabVisible = document.visibilityState === 'visible';
+});
+
+/* ============================================================
+   13. ANIMATION LOOP
+   ============================================================ */
+const clock = new THREE.Clock();
+
+function animate() {
+  requestAnimationFrame(animate);
+  if (!isTabVisible) { clock.getDelta(); return; }
+
+  const delta = Math.min(clock.getDelta(), 0.05);
+  const elapsed = clock.getElapsedTime();
+
+  mouseSmoothed.x += (mouse.x - mouseSmoothed.x) * 0.08;
+  mouseSmoothed.y += (mouse.y - mouseSmoothed.y) * 0.08;
+
+  windowUniforms.uTime.value = elapsed;
+
+  if (elapsed > nextPulseAt && pulseActiveUntil < elapsed) {
+    pulseActiveUntil = elapsed + CONFIG.pulseWaveDuration;
+    pulseStartTime = elapsed;
+    nextPulseAt = elapsed + CONFIG.pulseWaveInterval + fbmNoise1D(elapsed) * 1.5;
+  }
+  if (elapsed < pulseActiveUntil) {
+    const t = (elapsed - pulseStartTime) / CONFIG.pulseWaveDuration;
+    windowUniforms.uWaveY.value = Ease.inOutCubic(THREE.MathUtils.clamp(t, 0, 1));
+  } else {
+    windowUniforms.uWaveY.value = -1.0;
+  }
+
+  dataLines.forEach((line) => {
+    const speedMod = 1 + fbmNoise1D(elapsed * 0.3 + line.noiseOffset) * 0.4;
+    line.y += line.baseSpeed * speedMod * line.dir * delta;
+    if (line.y > CONFIG.buildingHeight + 2) line.y = -2;
+    if (line.y < -2) line.y = CONFIG.buildingHeight + 2;
+    line.mesh.position.y = line.y;
+    const edgeFade = Math.min(line.y / 3, (CONFIG.buildingHeight - line.y) / 3, 1);
+    line.mesh.material.opacity = Math.max(0, edgeFade) * 0.8;
+  });
+
+  moteUniforms.uTime.value = elapsed;
+
+  raycaster.setFromCamera(mouseSmoothed, camera);
+  if (raycaster.ray.intersectPlane(groundPlane, rayHit)) {
+    lightTarget.set(rayHit.x * 0.5, 14, rayHit.z * 0.5 + 15);
+  }
+  cursorLight.position.lerp(lightTarget, 0.06);
+  cursorLight.intensity = 2.6 + fbmNoise1D(elapsed * 0.8) * 0.6;
+
+  const idleAngle = elapsed * CONFIG.cameraIdleOrbitSpeed;
+  const noiseDrift = fbmNoise1D(elapsed * 0.07) * CONFIG.cameraNoiseInfluence * 0.02;
+  const targetAngle = idleAngle + noiseDrift + mouseSmoothed.x * CONFIG.cameraMouseInfluence;
+  const radius = CONFIG.cameraBaseDistance + fbmNoise1D(elapsed * 0.05 + 50) * 2.5;
+
+  // Offset camera to the right to accommodate left sidebar content
+  const targetX = Math.sin(targetAngle) * radius + 20; 
+  camera.position.x += (targetX - camera.position.x) * 0.03;
+  camera.position.z += (Math.cos(targetAngle) * radius - camera.position.z) * 0.03;
+  const targetY = CONFIG.cameraBaseY - mouseSmoothed.y * 3 + fbmNoise1D(elapsed * 0.09 + 20) * 1.2;
+  camera.position.y += (targetY - camera.position.y) * 0.03;
+  camera.lookAt(20, CONFIG.cameraLookY, 0);
+
+  runBloomPipeline();
+}
+
+/* ============================================================
+   14. INIT
+   ============================================================ */
+const veil = document.getElementById('loading-veil');
+requestAnimationFrame(() => {
+  setTimeout(() => {
+    veil.style.opacity = '0';
+    setTimeout(() => veil.remove(), 1000);
+  }, 400);
+});
+
+animate();
+
+})();
+</script>
 </body>
 </html>
