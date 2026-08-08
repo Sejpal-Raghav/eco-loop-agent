@@ -4,116 +4,76 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Eco-Loop | Multi-Agent Mission Control</title>
-    <meta name="description" content="Eco-Loop Cognitive Building Intelligence Platform — 5-layer multi-agent workflow monitor">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="description" content="Eco-Loop Cognitive Building Intelligence Platform">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <style>
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
         :root {
-            --bg-primary: #06080d;
-            --bg-secondary: #0d1117;
-            --bg-card: rgba(17, 24, 39, 0.7);
-            --bg-card-hover: rgba(24, 33, 50, 0.8);
-            --border: rgba(56, 78, 112, 0.3);
-            --border-bright: rgba(80, 120, 180, 0.5);
-            --text-primary: #e6edf3;
-            --text-secondary: #8b949e;
-            --text-muted: #5a6370;
-            --accent-blue: #58a6ff;
+            --bg-main: #f6f9fc;
+            --bg-card: #ffffff;
+            --text-heading: #0a2540;
+            --text-body: #425466;
+            --text-muted: #8b9bb4;
+            --accent: #635BFF;
+            --accent-hover: #0a2540;
             --accent-green: #3fb950;
-            --accent-orange: #d29922;
             --accent-red: #f85149;
-            --accent-purple: #bc8cff;
+            --accent-orange: #d29922;
             --accent-cyan: #39d2c0;
-            --gradient-blue: linear-gradient(135deg, #1a3a5c 0%, #0d1f33 100%);
-            --gradient-green: linear-gradient(135deg, #1a3c2a 0%, #0d1f16 100%);
-            --gradient-red: linear-gradient(135deg, #3c1a1a 0%, #1f0d0d 100%);
-            --gradient-purple: linear-gradient(135deg, #2a1a3c 0%, #160d1f 100%);
-            --glass: rgba(255, 255, 255, 0.03);
-            --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
-            --shadow-glow-blue: 0 0 20px rgba(88, 166, 255, 0.15);
-            --shadow-glow-green: 0 0 20px rgba(63, 185, 80, 0.15);
-            --shadow-glow-red: 0 0 20px rgba(248, 81, 73, 0.15);
+            --shadow-soft: 0 50px 100px -20px rgba(50,50,93,0.25), 0 30px 60px -30px rgba(0,0,0,0.3);
+            --shadow-subtle: 0 13px 27px -5px rgba(50,50,93,0.15), 0 8px 16px -8px rgba(0,0,0,0.1);
+            --border-radius: 16px;
+            --border: rgba(10, 37, 64, 0.1);
         }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-body);
             line-height: 1.6;
-            min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        /* --- Header --- */
+        h1, h2, h3, h4 { color: var(--text-heading); letter-spacing: -0.02em; }
+
+        /* --- Header / Scrubber --- */
         .header {
-            background: linear-gradient(180deg, rgba(13, 17, 23, 0.95) 0%, var(--bg-primary) 100%);
-            border-bottom: 1px solid var(--border);
-            padding: 2rem 2.5rem 1.5rem;
             position: sticky;
             top: 0;
             z-index: 100;
-            backdrop-filter: blur(20px);
-        }
-        .header-top {
+            background: rgba(246, 249, 252, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            margin-bottom: 1rem;
-        }
-        .header h1 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            letter-spacing: -0.02em;
-            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .header .subtitle {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            font-weight: 400;
-        }
-        .header-badge {
-            display: inline-flex;
             align-items: center;
-            gap: 0.4rem;
-            padding: 0.3rem 0.8rem;
-            border-radius: 100px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+            padding: 1rem 5%;
+            border-bottom: 1px solid var(--border);
         }
-        .badge-agents { background: rgba(188, 140, 255, 0.15); color: var(--accent-purple); border: 1px solid rgba(188, 140, 255, 0.25); }
-        .badge-zones { background: rgba(57, 210, 192, 0.15); color: var(--accent-cyan); border: 1px solid rgba(57, 210, 192, 0.25); }
 
-        /* --- Scrubber --- */
+        .logo { font-weight: 800; font-size: 1.25rem; color: var(--text-heading); text-decoration: none; display: flex; align-items: center; gap: 0.5rem; }
+        
         .scrubber-container {
             display: flex;
             align-items: center;
-            gap: 1rem;
-            padding: 0 0.25rem;
+            gap: 1.5rem;
+            flex: 1;
+            max-width: 600px;
+            margin: 0 2rem;
+            background: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 99px;
+            box-shadow: var(--shadow-subtle);
         }
-        .scrubber-label {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            font-weight: 500;
-            white-space: nowrap;
-        }
-        .scrubber-time {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--accent-cyan);
-            min-width: 5rem;
-            text-align: center;
-            font-variant-numeric: tabular-nums;
-        }
+        .scrubber-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+        .scrubber-time { font-size: 0.95rem; font-weight: 700; color: var(--accent); min-width: 4rem; text-align: center; font-variant-numeric: tabular-nums; }
         input[type="range"] {
             flex: 1;
             -webkit-appearance: none;
-            appearance: none;
             height: 6px;
-            background: var(--border);
+            background: var(--bg-main);
             border-radius: 3px;
             outline: none;
             cursor: pointer;
@@ -123,746 +83,659 @@
             width: 18px;
             height: 18px;
             border-radius: 50%;
-            background: var(--accent-cyan);
-            box-shadow: 0 0 10px rgba(57, 210, 192, 0.4);
+            background: var(--accent);
+            box-shadow: 0 0 10px rgba(99, 91, 255, 0.4);
             cursor: grab;
         }
         .play-btn {
-            background: rgba(57, 210, 192, 0.15);
-            border: 1px solid rgba(57, 210, 192, 0.3);
-            color: var(--accent-cyan);
-            padding: 0.35rem 0.8rem;
-            border-radius: 6px;
+            background: rgba(99, 91, 255, 0.1);
+            color: var(--accent);
+            border: none;
+            padding: 0.4rem 1rem;
+            border-radius: 99px;
             font-size: 0.75rem;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.2s;
         }
-        .play-btn:hover { background: rgba(57, 210, 192, 0.25); }
+        .play-btn:hover { background: rgba(99, 91, 255, 0.2); }
 
-        /* --- Main Layout --- */
-        .main { padding: 1.5rem 2.5rem 3rem; max-width: 1600px; margin: 0 auto; }
+        .header-badges { display: flex; gap: 0.5rem; }
+        .badge { font-size: 0.75rem; font-weight: 600; padding: 0.3rem 0.8rem; border-radius: 99px; }
+        .badge-agents { background: rgba(99, 91, 255, 0.1); color: var(--accent); }
+        .badge-zones { background: rgba(57, 210, 192, 0.15); color: #228b80; }
 
-        /* --- KPI Cards --- */
+        /* --- Hero Section --- */
+        .hero {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            padding: 6rem 5% 4rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .hero-content { display: flex; flex-direction: column; justify-content: center; z-index: 10; }
+        .eyebrow { color: var(--accent); font-weight: 700; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; }
+        .hero h1 { font-size: 4.5rem; font-weight: 800; line-height: 1.05; margin-bottom: 1.5rem; }
+        .hero p { font-size: 1.25rem; margin-bottom: 2.5rem; max-width: 90%; }
+        
+        .hero-visual { position: relative; height: 100%; min-height: 400px; display: flex; align-items: center; justify-content: center; }
+        .blob-container { position: absolute; width: 100%; height: 100%; filter: blur(60px); z-index: 1; }
+        .blob { position: absolute; border-radius: 50%; opacity: 0.6; }
+        .blob-1 { width: 300px; height: 300px; background: var(--accent); top: 10%; left: 10%; }
+        .blob-2 { width: 250px; height: 250px; background: #39d2c0; bottom: 10%; right: 10%; }
+        .blob-3 { width: 350px; height: 350px; background: #bc8cff; top: 40%; left: 30%; }
+        .glass-card {
+            position: relative;
+            z-index: 2;
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 24px;
+            padding: 2.5rem;
+            width: 85%;
+            box-shadow: var(--shadow-soft);
+        }
+
+        /* --- Marquee --- */
+        .marquee-section { padding: 3rem 0; overflow: hidden; position: relative; border-bottom: 1px solid var(--border); }
+        .marquee-container { display: flex; width: max-content; }
+        .marquee-content { display: flex; align-items: center; gap: 4rem; padding: 0 2rem; font-weight: 700; font-size: 1.25rem; color: var(--text-muted); }
+
+        /* --- KPIs --- */
         .kpi-row {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 1rem;
-            margin-bottom: 1.5rem;
+            gap: 1.5rem;
+            max-width: 1400px;
+            margin: 4rem auto 2rem;
+            padding: 0 5%;
         }
         .kpi-card {
             background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.2rem 1.4rem;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-subtle);
+            transition: transform 0.3s ease;
         }
-        .kpi-card:hover { border-color: var(--border-bright); transform: translateY(-2px); box-shadow: var(--shadow); }
-        .kpi-label { font-size: 0.7rem; color: var(--text-secondary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; }
-        .kpi-value { font-size: 1.8rem; font-weight: 700; font-variant-numeric: tabular-nums; }
-        .kpi-unit { font-size: 0.8rem; color: var(--text-secondary); font-weight: 400; margin-left: 0.2rem; }
-        .kpi-delta { font-size: 0.7rem; font-weight: 500; margin-top: 0.3rem; }
+        .kpi-card:hover { transform: translateY(-4px); }
+        .kpi-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+        .kpi-value { font-size: 2.5rem; font-weight: 800; color: var(--text-heading); font-variant-numeric: tabular-nums; line-height: 1; }
+        .kpi-unit { font-size: 1rem; color: var(--text-muted); font-weight: 500; margin-left: 0.2rem; }
+        .kpi-delta { font-size: 0.8rem; font-weight: 600; margin-top: 0.5rem; }
         .kpi-delta.good { color: var(--accent-green); }
         .kpi-delta.warn { color: var(--accent-orange); }
         .kpi-delta.bad { color: var(--accent-red); }
 
-        /* --- Section Cards --- */
-        .section {
+        /* --- Bento Grid --- */
+        .bento-section { padding: 2rem 5% 6rem; max-width: 1400px; margin: 0 auto; }
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-auto-rows: minmax(280px, auto);
+            gap: 1.5rem;
+        }
+        .bento-card {
             background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            backdrop-filter: blur(10px);
-            animation: fadeIn 0.5s ease-out;
-        }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .section-header {
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-            margin-bottom: 1rem;
-            padding-bottom: 0.8rem;
-            border-bottom: 1px solid var(--border);
-        }
-        .section-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-        }
-        .icon-planning { background: var(--gradient-purple); }
-        .icon-perception { background: var(--gradient-blue); }
-        .icon-reasoning { background: linear-gradient(135deg, #1a3c3c 0%, #0d1f1f 100%); }
-        .icon-safety { background: var(--gradient-red); }
-        .icon-performance { background: var(--gradient-green); }
-        .section-title { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); }
-        .section-layer { font-size: 0.65rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; }
-
-        /* --- Two-column grid --- */
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
-
-        /* --- Strategy Card --- */
-        .strategy-mode {
-            display: inline-block;
-            padding: 0.25rem 0.7rem;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            margin-bottom: 0.75rem;
-        }
-        .mode-pre-cool { background: rgba(88, 166, 255, 0.15); color: var(--accent-blue); }
-        .mode-demand-shed { background: rgba(210, 153, 34, 0.15); color: var(--accent-orange); }
-        .mode-balanced { background: rgba(63, 185, 80, 0.15); color: var(--accent-green); }
-        .strategy-reasoning { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.6; }
-
-        /* --- Anomaly Card --- */
-        .anomaly-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 0.8rem;
-            padding: 0.8rem 1rem;
-            background: rgba(210, 153, 34, 0.08);
-            border: 1px solid rgba(210, 153, 34, 0.2);
-            border-radius: 8px;
-            margin-bottom: 0.5rem;
-        }
-        .anomaly-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-orange); margin-top: 0.35rem; flex-shrink: 0; }
-        .anomaly-text { font-size: 0.8rem; color: var(--text-secondary); }
-        .no-anomaly { font-size: 0.8rem; color: var(--text-muted); font-style: italic; padding: 0.5rem 0; }
-
-        /* --- Proposals Table --- */
-        .proposals-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-        .proposals-table th {
-            text-align: left;
-            padding: 0.6rem 0.8rem;
-            font-size: 0.65rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            color: var(--text-muted);
-            border-bottom: 1px solid var(--border);
-        }
-        .proposals-table td {
-            padding: 0.6rem 0.8rem;
-            border-bottom: 1px solid rgba(56, 78, 112, 0.15);
-            color: var(--text-secondary);
-            font-variant-numeric: tabular-nums;
-        }
-        .proposals-table tr:hover td { background: rgba(255, 255, 255, 0.02); }
-        .proposals-table .zone-name { color: var(--text-primary); font-weight: 500; }
-        .proposals-table .conflict-row td { background: rgba(248, 81, 73, 0.06); }
-        .proposals-table .delta-cell { font-weight: 600; }
-        .delta-positive { color: var(--accent-red); }
-        .delta-negative { color: var(--accent-blue); }
-        .delta-zero { color: var(--text-muted); }
-
-        /* --- Safety Alerts --- */
-        .alert-box {
-            padding: 1rem 1.2rem;
-            border-radius: 8px;
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: flex-start;
-            gap: 0.8rem;
-        }
-        .alert-critical { background: rgba(248, 81, 73, 0.08); border: 1px solid rgba(248, 81, 73, 0.2); }
-        .alert-warning { background: rgba(210, 153, 34, 0.08); border: 1px solid rgba(210, 153, 34, 0.2); }
-        .alert-info { background: rgba(88, 166, 255, 0.08); border: 1px solid rgba(88, 166, 255, 0.2); }
-        .alert-icon { font-size: 1rem; margin-top: 0.1rem; }
-        .alert-text { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; }
-        .alert-text strong { color: var(--text-primary); }
-        .no-alerts { font-size: 0.8rem; color: var(--text-muted); font-style: italic; padding: 0.5rem 0; }
-
-        /* --- Charts --- */
-        .chart-container { position: relative; width: 100%; height: 220px; margin-top: 0.5rem; }
-        .chart-container canvas { width: 100% !important; height: 100% !important; }
-
-        /* --- Event Log --- */
-        .event-log {
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid var(--border);
-        }
-        .event-item {
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-            padding: 0.5rem 0;
-        }
-        .event-time { font-size: 0.7rem; color: var(--text-muted); font-variant-numeric: tabular-nums; min-width: 4rem; }
-        .event-badge {
-            font-size: 0.6rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            padding: 0.15rem 0.5rem;
-            border-radius: 4px;
-            min-width: 5rem;
-            text-align: center;
-        }
-        .event-badge-perception { background: rgba(88, 166, 255, 0.15); color: var(--accent-blue); }
-        .event-badge-reasoning { background: rgba(57, 210, 192, 0.15); color: var(--accent-cyan); }
-        .event-badge-safety { background: rgba(248, 81, 73, 0.15); color: var(--accent-red); }
-        .event-msg { font-size: 0.75rem; color: var(--text-secondary); }
-
-        /* --- Video Section --- */
-        .video-section { text-align: center; }
-        .video-section video {
-            width: 100%;
-            max-width: 900px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-        }
-        .video-caption { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.8rem; font-style: italic; }
-        .video-placeholder {
-            padding: 3rem 2rem;
-            border: 2px dashed var(--border);
-            border-radius: 12px;
-            color: var(--text-muted);
-            font-size: 0.85rem;
-        }
-
-        /* --- Footer --- */
-        .footer {
-            text-align: center;
+            border-radius: var(--border-radius);
             padding: 2rem;
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            border-top: 1px solid var(--border);
-            margin-top: 2rem;
+            box-shadow: var(--shadow-subtle);
+            opacity: 0; /* For anime.js */
+            display: flex;
+            flex-direction: column;
         }
+        .bento-card-large { grid-column: span 2; }
+        .bento-card-wide { grid-column: span 3; }
+        
+        .bento-header { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem; }
+        .bento-icon { width: 40px; height: 40px; background: rgba(99,91,255,0.1); color: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+        .bento-title { font-size: 1.1rem; font-weight: 700; color: var(--text-heading); }
+        .bento-subtitle { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
 
-        /* --- Responsive --- */
-        @media (max-width: 900px) {
-            .kpi-row { grid-template-columns: repeat(2, 1fr); }
-            .grid-2 { grid-template-columns: 1fr; }
-            .header, .main { padding-left: 1rem; padding-right: 1rem; }
+        /* --- Dynamic Content Styles (Injected by JS) --- */
+        .strategy-mode { display: inline-block; padding: 0.3rem 0.8rem; border-radius: 99px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; margin-bottom: 1rem; }
+        .mode-pre-cool { background: rgba(57, 210, 192, 0.15); color: #228b80; }
+        .mode-demand-shed { background: rgba(210, 153, 34, 0.15); color: var(--accent-orange); }
+        .mode-balanced { background: rgba(99, 91, 255, 0.15); color: var(--accent); }
+        .strategy-reasoning { font-size: 0.95rem; color: var(--text-body); }
+
+        .anomaly-item { display: flex; gap: 1rem; padding: 1rem; background: rgba(210, 153, 34, 0.1); border-radius: 12px; margin-bottom: 0.5rem; border: 1px solid rgba(210, 153, 34, 0.2); }
+        .anomaly-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent-orange); margin-top: 0.3rem; flex-shrink: 0; }
+        .no-anomaly { font-size: 0.9rem; color: var(--text-muted); font-style: italic; }
+
+        .proposals-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .proposals-table th { text-align: left; padding: 0.8rem; font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid var(--border); }
+        .proposals-table td { padding: 0.8rem; border-bottom: 1px solid rgba(10,37,64,0.05); }
+        .proposals-table .zone-name { font-weight: 600; color: var(--text-heading); }
+        .proposals-table .conflict-row td { background: rgba(248, 81, 73, 0.05); }
+        .delta-positive { color: var(--accent-red); font-weight: 600; }
+        .delta-negative { color: var(--accent-green); font-weight: 600; }
+        
+        .alert-box { padding: 1rem; border-radius: 12px; margin-bottom: 0.8rem; display: flex; gap: 1rem; }
+        .alert-critical { background: rgba(248, 81, 73, 0.1); border: 1px solid rgba(248, 81, 73, 0.2); }
+        .alert-warning { background: rgba(210, 153, 34, 0.1); border: 1px solid rgba(210, 153, 34, 0.2); }
+        .alert-text { font-size: 0.9rem; color: var(--text-heading); }
+        .alert-text strong { color: var(--accent-red); }
+
+        .chart-container { width: 100%; height: 220px; position: relative; }
+        .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+
+        /* --- Diagonal CTA / Logs Section --- */
+        .cta-section {
+            background: var(--text-heading);
+            color: white;
+            padding: 8rem 5% 6rem;
+            position: relative;
+            margin-top: 4rem;
+        }
+        .cta-section::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 6vw;
+            background: var(--bg-main);
+            clip-path: polygon(0 0, 100% 0, 100% 100%);
+        }
+        .cta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; max-width: 1400px; margin: 0 auto; }
+        .cta-section h2 { color: white; font-size: 2.5rem; margin-bottom: 1.5rem; }
+        
+        .event-item { display: flex; gap: 1rem; margin-bottom: 1rem; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem; }
+        .event-time { font-family: monospace; color: #8b9bb4; font-size: 0.85rem; }
+        .event-badge { font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 6px; text-transform: uppercase; }
+        .event-badge-perception { background: rgba(99,91,255,0.2); color: #bc8cff; }
+        .event-badge-reasoning { background: rgba(57,210,192,0.2); color: #39d2c0; }
+        .event-badge-safety { background: rgba(248,81,73,0.2); color: #f85149; }
+        .event-msg { color: #e6edf3; font-size: 0.9rem; }
+
+        .video-wrapper { background: rgba(0,0,0,0.3); border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); padding: 1rem; }
+        video { width: 100%; border-radius: 8px; }
+
+        @media (max-width: 1024px) {
+            .hero { grid-template-columns: 1fr; }
+            .bento-grid { grid-template-columns: 1fr 1fr; }
+            .bento-card-large { grid-column: span 1; }
+            .bento-card-wide { grid-column: span 2; }
+            .kpi-row { grid-template-columns: 1fr 1fr; }
+            .cta-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
-<!-- Header with Timeline Scrubber -->
-<header class="header">
-    <div class="header-top">
-        <div>
-            <h1>Eco-Loop Cognitive Building Intelligence</h1>
-            <p class="subtitle">Multi-Agent Workflow Monitor</p>
+    <!-- Sticky Glassmorphism Header -->
+    <header class="header">
+        <a href="#" class="logo">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="var(--accent)"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="none"/></svg>
+            Eco-Loop
+        </a>
+        
+        <div class="scrubber-container">
+            <span class="scrubber-label">Timeline</span>
+            <span class="scrubber-time" id="scrubber-time">00:00</span>
+            <input type="range" id="scrubber" min="0" max="47" value="0">
+            <button class="play-btn" id="play-btn" onclick="togglePlay()">PLAY</button>
         </div>
-        <div style="display:flex; gap:0.5rem;">
-            <span class="header-badge badge-agents">7 LLM Agents</span>
-            <span class="header-badge badge-zones">5 Zones</span>
+
+        <div class="header-badges">
+            <span class="badge badge-agents">7 LLMs</span>
+            <span class="badge badge-zones">5 Zones</span>
         </div>
-    </div>
-    <div class="scrubber-container">
-        <span class="scrubber-label">TIMELINE</span>
-        <span class="scrubber-time" id="scrubber-time">00:00</span>
-        <input type="range" id="scrubber" min="0" max="47" value="0">
-        <button class="play-btn" id="play-btn" onclick="togglePlay()">PLAY</button>
-    </div>
-</header>
+    </header>
 
-<main class="main">
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="eyebrow anime-hero">Cognitive Building Intelligence</div>
+            <h1 class="anime-hero">Autonomous HVAC Control</h1>
+            <p class="anime-hero">Eco-Loop coordinates 7 concurrent LLM agents through a Model Context Protocol server to optimize building energy consumption in real time.</p>
+        </div>
+        <div class="hero-visual">
+            <div class="blob-container">
+                <div class="blob blob-1"></div>
+                <div class="blob blob-2"></div>
+                <div class="blob blob-3"></div>
+            </div>
+            <div class="glass-card">
+                <h3 style="margin-bottom: 1rem;">Live Simulation Status</h3>
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1rem;">
+                    <span style="color:var(--text-muted); font-weight:600;">Engine</span>
+                    <span style="font-weight:700;">EnergyPlus v26.1.0</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1rem;">
+                    <span style="color:var(--text-muted); font-weight:600;">Model</span>
+                    <span style="font-weight:700;">qwen2.5:7b-instruct</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color:var(--text-muted); font-weight:600;">Building</span>
+                    <span style="font-weight:700;">DOE RefBldg Small</span>
+                </div>
+            </div>
+        </div>
+    </section>
 
-    <!-- KPI Cards -->
+    <!-- Logo Marquee -->
+    <section class="marquee-section">
+        <div class="marquee-container" id="marquee-container">
+            <div class="marquee-content">
+                <span>⚡ EnergyPlus</span>
+                <span>🧠 Qwen2.5</span>
+                <span>🔌 FastMCP</span>
+                <span>🦙 Ollama</span>
+                <span>📊 Python</span>
+                <span>⚡ EnergyPlus</span>
+                <span>🧠 Qwen2.5</span>
+                <span>🔌 FastMCP</span>
+                <span>🦙 Ollama</span>
+                <span>📊 Python</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- KPI Grid -->
     <div class="kpi-row">
-        <div class="kpi-card">
+        <div class="kpi-card anime-bento">
             <div class="kpi-label">Facility Demand</div>
             <div><span class="kpi-value" id="kpi-demand">--</span><span class="kpi-unit">kW</span></div>
             <div class="kpi-delta" id="kpi-demand-delta"></div>
         </div>
-        <div class="kpi-card">
-            <div class="kpi-label">Avg PMV</div>
+        <div class="kpi-card anime-bento">
+            <div class="kpi-label">Avg PMV (Comfort)</div>
             <div><span class="kpi-value" id="kpi-pmv">--</span></div>
             <div class="kpi-delta" id="kpi-pmv-delta"></div>
         </div>
-        <div class="kpi-card">
+        <div class="kpi-card anime-bento">
             <div class="kpi-label">Guardrail Clamps</div>
             <div><span class="kpi-value" id="kpi-clamps">--</span></div>
             <div class="kpi-delta" id="kpi-clamps-delta"></div>
         </div>
-        <div class="kpi-card">
+        <div class="kpi-card anime-bento">
             <div class="kpi-label">Grid Carbon</div>
             <div><span class="kpi-value" id="kpi-carbon">--</span><span class="kpi-unit">gCO2</span></div>
             <div class="kpi-delta" id="kpi-carbon-delta"></div>
         </div>
     </div>
 
-    <!-- Planning + Perception -->
-    <div class="grid-2">
-        <div class="section" style="animation-delay: 0.1s;">
-            <div class="section-header">
-                <div class="section-icon icon-planning">&#9883;</div>
-                <div>
-                    <div class="section-title">Forecast Planner</div>
-                    <div class="section-layer">Planning Layer</div>
+    <!-- Bento Grid for Cognitive Layers -->
+    <section class="bento-section">
+        <div class="bento-grid">
+            
+            <!-- Planning -->
+            <div class="bento-card anime-bento">
+                <div class="bento-header">
+                    <div class="bento-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg></div>
+                    <div>
+                        <div class="bento-title">Forecast Planner</div>
+                        <div class="bento-subtitle">Planning Layer</div>
+                    </div>
+                </div>
+                <div id="planning-content"></div>
+            </div>
+
+            <!-- Perception -->
+            <div class="bento-card anime-bento">
+                <div class="bento-header">
+                    <div class="bento-icon" style="background: rgba(57,210,192,0.1); color: #228b80;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg></div>
+                    <div>
+                        <div class="bento-title">Anomaly Detector</div>
+                        <div class="bento-subtitle">Perception Layer</div>
+                    </div>
+                </div>
+                <div id="perception-content"></div>
+            </div>
+
+            <!-- Safety -->
+            <div class="bento-card anime-bento">
+                <div class="bento-header">
+                    <div class="bento-icon" style="background: rgba(248,81,73,0.1); color: #f85149;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div>
+                    <div>
+                        <div class="bento-title">Comfort Auditor</div>
+                        <div class="bento-subtitle">Safety Layer</div>
+                    </div>
+                </div>
+                <div id="safety-content"></div>
+            </div>
+
+            <!-- Reasoning (Large) -->
+            <div class="bento-card bento-card-large anime-bento">
+                <div class="bento-header">
+                    <div class="bento-icon" style="background: rgba(210,153,34,0.1); color: #d29922;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg></div>
+                    <div>
+                        <div class="bento-title">Zone Agents + Coordinator</div>
+                        <div class="bento-subtitle">Reasoning Layer</div>
+                    </div>
+                </div>
+                <div id="reasoning-content"></div>
+            </div>
+
+            <!-- Performance Charts (Wide) -->
+            <div class="bento-card bento-card-wide anime-bento">
+                <div class="bento-header">
+                    <div class="bento-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg></div>
+                    <div>
+                        <div class="bento-title">Performance Timeline</div>
+                        <div class="bento-subtitle">24-Hour Overview</div>
+                    </div>
+                </div>
+                <div class="chart-grid">
+                    <div>
+                        <div class="bento-subtitle" style="margin-bottom:0.5rem;">Facility Power Demand (kW)</div>
+                        <div class="chart-container"><canvas id="chart-energy"></canvas></div>
+                    </div>
+                    <div>
+                        <div class="bento-subtitle" style="margin-bottom:0.5rem;">Average PMV</div>
+                        <div class="chart-container"><canvas id="chart-pmv"></canvas></div>
+                    </div>
                 </div>
             </div>
-            <div id="planning-content"></div>
+
         </div>
-        <div class="section" style="animation-delay: 0.2s;">
-            <div class="section-header">
-                <div class="section-icon icon-perception">&#9673;</div>
-                <div>
-                    <div class="section-title">Anomaly Detector</div>
-                    <div class="section-layer">Perception Layer</div>
+    </section>
+
+    <!-- Diagonal CTA / Logs Section -->
+    <section class="cta-section">
+        <div class="cta-grid">
+            <div>
+                <h2>Crisis Event Log</h2>
+                <div id="event-log-content"></div>
+            </div>
+            <div>
+                <h2>Proof of Execution</h2>
+                <div class="video-wrapper" id="video-content">
+                    <p style="color:#8b9bb4; font-style:italic; padding: 2rem; text-align:center;">
+                        Place your screen recording as <code>demo_video.mp4</code> in this directory.
+                    </p>
                 </div>
             </div>
-            <div id="perception-content"></div>
         </div>
-    </div>
+    </section>
 
-    <!-- Reasoning Layer -->
-    <div class="section" style="animation-delay: 0.3s;">
-        <div class="section-header">
-            <div class="section-icon icon-reasoning">&#9881;</div>
-            <div>
-                <div class="section-title">Zone Agents + Coordinator</div>
-                <div class="section-layer">Reasoning Layer</div>
-            </div>
-        </div>
-        <div id="reasoning-content"></div>
-    </div>
+    <script src="demo_data.js"></script>
+    <script>
+        // --- Data & Logic ---
+        let DATA = null;
+        let currentTick = 0;
+        let playInterval = null;
 
-    <!-- Safety Layer -->
-    <div class="section" style="animation-delay: 0.4s;">
-        <div class="section-header">
-            <div class="section-icon icon-safety">&#9888;</div>
-            <div>
-                <div class="section-title">Comfort Auditor + Guardrails</div>
-                <div class="section-layer">Safety Layer</div>
-            </div>
-        </div>
-        <div id="safety-content"></div>
-    </div>
+        function loadData() {
+            if (typeof DEMO_DATA !== 'undefined') {
+                DATA = DEMO_DATA;
+                renderTick(0);
+                drawCharts();
+                renderEventLog();
+                checkForVideo();
+            } else {
+                document.querySelector('.bento-section').innerHTML = '<h3 style="color:var(--accent-red); text-align:center;">Failed to load demo_data.js. Run data generator.</h3>';
+            }
+        }
 
-    <!-- Performance Charts -->
-    <div class="section" style="animation-delay: 0.5s;">
-        <div class="section-header">
-            <div class="section-icon icon-performance">&#9679;</div>
-            <div>
-                <div class="section-title">Performance Timeline</div>
-                <div class="section-layer">24-Hour Overview</div>
-            </div>
-        </div>
-        <div class="grid-2">
-            <div>
-                <div class="kpi-label" style="margin-bottom:0.4rem;">Facility Power Demand (kW)</div>
-                <div class="chart-container"><canvas id="chart-energy"></canvas></div>
-            </div>
-            <div>
-                <div class="kpi-label" style="margin-bottom:0.4rem;">Average PMV</div>
-                <div class="chart-container"><canvas id="chart-pmv"></canvas></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Event Log -->
-    <div class="section" style="animation-delay: 0.6s;">
-        <div class="section-header">
-            <div class="section-icon" style="background: var(--gradient-blue);">&#128203;</div>
-            <div>
-                <div class="section-title">Crisis Event Log</div>
-                <div class="section-layer">All Layers</div>
-            </div>
-        </div>
-        <div id="event-log-content"></div>
-    </div>
-
-    <!-- Video Section -->
-    <div class="section" style="animation-delay: 0.7s;">
-        <div class="section-header">
-            <div class="section-icon" style="background: var(--gradient-green);">&#9654;</div>
-            <div>
-                <div class="section-title">Live System Recording</div>
-                <div class="section-layer">Proof of Execution</div>
-            </div>
-        </div>
-        <div class="video-section" id="video-content">
-            <div class="video-placeholder">
-                Place your screen recording as <code>demo_video.mp4</code> in this directory.<br>
-                It will appear here automatically.
-            </div>
-        </div>
-    </div>
-
-</main>
-
-<footer class="footer">
-    Eco-Loop Cognitive Building Intelligence Platform &mdash; 5-Layer Multi-Agent Architecture<br>
-    EnergyPlus v26.1.0 &bull; qwen2.5:7b-instruct &bull; Model Context Protocol (MCP)
-</footer>
-
-<script src="demo_data.js"></script>
-<script>
-let DATA = null;
-let currentTick = 0;
-let playInterval = null;
-
-// --- Load Data ---
-function loadData() {
-    if (typeof DEMO_DATA !== 'undefined') {
-        DATA = DEMO_DATA;
-        renderTick(0);
-        drawCharts();
-        renderEventLog();
-        checkForVideo();
-    } else {
-        document.querySelector('.main').innerHTML = '<div class="section"><p style="color:var(--accent-red); padding:2rem;">Failed to load demo_data.js. Run <code>python scripts/generate_demo_data.py</code> first.</p></div>';
-    }
-}
-
-// --- Scrubber ---
-document.getElementById('scrubber').addEventListener('input', function() {
-    currentTick = parseInt(this.value);
-    renderTick(currentTick);
-    drawCharts();
-});
-
-function togglePlay() {
-    const btn = document.getElementById('play-btn');
-    if (playInterval) {
-        clearInterval(playInterval);
-        playInterval = null;
-        btn.textContent = 'PLAY';
-    } else {
-        btn.textContent = 'PAUSE';
-        playInterval = setInterval(() => {
-            currentTick = (currentTick + 1) % 48;
-            document.getElementById('scrubber').value = currentTick;
+        document.getElementById('scrubber').addEventListener('input', function() {
+            currentTick = parseInt(this.value);
             renderTick(currentTick);
             drawCharts();
-        }, 800);
-    }
-}
+        });
 
-// --- Render a single tick ---
-function renderTick(tick) {
-    if (!DATA) return;
-    const t = DATA.ticks[tick];
-
-    // Time
-    const timeStr = t.sim_time.substring(11, 16);
-    document.getElementById('scrubber-time').textContent = timeStr;
-
-    // KPIs
-    document.getElementById('kpi-demand').textContent = t.facility_total_kw.toFixed(1);
-    const cap = t.strategy.peak_demand_cap_kw || 50;
-    const demandDelta = document.getElementById('kpi-demand-delta');
-    if (t.facility_total_kw > cap) {
-        demandDelta.textContent = `Exceeds ${cap} kW cap`;
-        demandDelta.className = 'kpi-delta bad';
-    } else {
-        demandDelta.textContent = `Within ${cap} kW cap`;
-        demandDelta.className = 'kpi-delta good';
-    }
-
-    const avgPmv = t.zones.reduce((s, z) => s + z.pmv, 0) / t.zones.length;
-    document.getElementById('kpi-pmv').textContent = avgPmv.toFixed(2);
-    const pmvDelta = document.getElementById('kpi-pmv-delta');
-    if (Math.abs(avgPmv) > 0.5) {
-        pmvDelta.textContent = 'Outside comfort band';
-        pmvDelta.className = 'kpi-delta bad';
-    } else if (Math.abs(avgPmv) > 0.3) {
-        pmvDelta.textContent = 'Approaching limit';
-        pmvDelta.className = 'kpi-delta warn';
-    } else {
-        pmvDelta.textContent = 'Comfortable';
-        pmvDelta.className = 'kpi-delta good';
-    }
-
-    const clampCount = Object.keys(t.guardrail_clamps).length;
-    document.getElementById('kpi-clamps').textContent = clampCount;
-    const clampDelta = document.getElementById('kpi-clamps-delta');
-    clampDelta.textContent = clampCount > 0 ? 'Active this tick' : 'No clamps';
-    clampDelta.className = clampCount > 0 ? 'kpi-delta warn' : 'kpi-delta good';
-
-    document.getElementById('kpi-carbon').textContent = t.grid_carbon_gco2_kwh.toFixed(0);
-    const carbonDelta = document.getElementById('kpi-carbon-delta');
-    if (t.grid_carbon_gco2_kwh > 550) {
-        carbonDelta.textContent = 'High carbon intensity';
-        carbonDelta.className = 'kpi-delta bad';
-    } else if (t.grid_carbon_gco2_kwh > 450) {
-        carbonDelta.textContent = 'Moderate';
-        carbonDelta.className = 'kpi-delta warn';
-    } else {
-        carbonDelta.textContent = 'Low carbon';
-        carbonDelta.className = 'kpi-delta good';
-    }
-
-    // Planning
-    const planEl = document.getElementById('planning-content');
-    const modeClass = 'mode-' + (t.strategy.mode || 'balanced');
-    planEl.innerHTML = `
-        <span class="strategy-mode ${modeClass}">${t.strategy.strategy || t.strategy.mode}</span>
-        <p class="strategy-reasoning">${t.strategy.reasoning}</p>
-        <div style="margin-top:0.8rem; display:flex; gap:1rem;">
-            <div><span class="kpi-label">Peak Cap</span><br><span style="font-weight:600;">${t.strategy.peak_demand_cap_kw} kW</span></div>
-            <div><span class="kpi-label">PMV Target</span><br><span style="font-weight:600;">[${t.strategy.target_pmv_band[0]}, ${t.strategy.target_pmv_band[1]}]</span></div>
-        </div>
-    `;
-
-    // Perception
-    const percEl = document.getElementById('perception-content');
-    if (t.anomalies.length > 0) {
-        percEl.innerHTML = t.anomalies.map(a => `
-            <div class="anomaly-item">
-                <div class="anomaly-dot"></div>
-                <div class="anomaly-text"><strong>${a.zone}</strong>: ${a.message}</div>
-            </div>
-        `).join('');
-    } else {
-        percEl.innerHTML = '<div class="no-anomaly">All sensors nominal. No anomalies detected at this timestep.</div>';
-    }
-
-    // Reasoning — Proposals vs Coordinator
-    const reasonEl = document.getElementById('reasoning-content');
-    let tableRows = '';
-    for (const zone of DATA.metadata.zones) {
-        const prop = t.zone_proposals[zone] || {};
-        const coord = t.coordinator_decision[zone] || {};
-        const deltaH = ((coord.heating_c || 0) - (prop.heating_c || 0)).toFixed(1);
-        const deltaC = ((coord.cooling_c || 0) - (prop.cooling_c || 0)).toFixed(1);
-        const isConflict = Math.abs(deltaC) > 0.1 || Math.abs(deltaH) > 0.1;
-        const rowClass = isConflict ? 'conflict-row' : '';
-        const deltaHClass = deltaH > 0 ? 'delta-positive' : deltaH < 0 ? 'delta-negative' : 'delta-zero';
-        const deltaCClass = deltaC > 0 ? 'delta-positive' : deltaC < 0 ? 'delta-negative' : 'delta-zero';
-
-        tableRows += `<tr class="${rowClass}">
-            <td class="zone-name">${zone}</td>
-            <td>${prop.heating_c || '--'}</td>
-            <td>${prop.cooling_c || '--'}</td>
-            <td>${coord.heating_c || '--'}</td>
-            <td>${coord.cooling_c || '--'}</td>
-            <td class="delta-cell ${deltaHClass}">${deltaH > 0 ? '+' : ''}${deltaH}</td>
-            <td class="delta-cell ${deltaCClass}">${deltaC > 0 ? '+' : ''}${deltaC}</td>
-        </tr>`;
-    }
-
-    reasonEl.innerHTML = `
-        <table class="proposals-table">
-            <thead><tr>
-                <th>Zone</th>
-                <th>Proposed H (C)</th><th>Proposed C (C)</th>
-                <th>Approved H (C)</th><th>Approved C (C)</th>
-                <th>Delta H</th><th>Delta C</th>
-            </tr></thead>
-            <tbody>${tableRows}</tbody>
-        </table>
-        <div style="margin-top:0.8rem; font-size:0.75rem; color:var(--text-muted);">
-            <strong style="color:var(--text-secondary);">Coordinator:</strong> ${t.coordinator_reasoning}
-        </div>
-    `;
-
-    // Safety
-    const safetyEl = document.getElementById('safety-content');
-    let safetyHtml = '';
-
-    const overrides = Object.entries(t.comfort_overrides);
-    if (overrides.length > 0) {
-        for (const [zone, ov] of overrides) {
-            safetyHtml += `<div class="alert-box alert-critical">
-                <span class="alert-icon">&#9888;</span>
-                <div class="alert-text"><strong>EMERGENCY OVERRIDE: ${zone}</strong><br>${ov.reason}<br>Set to H:${ov.heating_c} C / C:${ov.cooling_c} C</div>
-            </div>`;
+        function togglePlay() {
+            const btn = document.getElementById('play-btn');
+            if (playInterval) {
+                clearInterval(playInterval);
+                playInterval = null;
+                btn.textContent = 'PLAY';
+            } else {
+                btn.textContent = 'PAUSE';
+                playInterval = setInterval(() => {
+                    currentTick = (currentTick + 1) % 48;
+                    document.getElementById('scrubber').value = currentTick;
+                    renderTick(currentTick);
+                    drawCharts();
+                }, 800);
+            }
         }
-    }
 
-    const clamps = Object.entries(t.guardrail_clamps);
-    if (clamps.length > 0) {
-        for (const [zone, reason] of clamps) {
-            safetyHtml += `<div class="alert-box alert-warning">
-                <span class="alert-icon">&#9888;</span>
-                <div class="alert-text"><strong>GUARDRAIL CLAMP: ${zone}</strong><br>${reason}</div>
-            </div>`;
+        function renderTick(tick) {
+            if (!DATA) return;
+            const t = DATA.ticks[tick];
+
+            // Time
+            document.getElementById('scrubber-time').textContent = t.sim_time.substring(11, 16);
+
+            // KPIs
+            document.getElementById('kpi-demand').textContent = t.facility_total_kw.toFixed(1);
+            const cap = t.strategy.peak_demand_cap_kw || 50;
+            const demandDelta = document.getElementById('kpi-demand-delta');
+            if (t.facility_total_kw > cap) {
+                demandDelta.textContent = `Exceeds ${cap} kW cap`;
+                demandDelta.className = 'kpi-delta bad';
+            } else {
+                demandDelta.textContent = `Within ${cap} kW cap`;
+                demandDelta.className = 'kpi-delta good';
+            }
+
+            const avgPmv = t.zones.reduce((s, z) => s + z.pmv, 0) / t.zones.length;
+            document.getElementById('kpi-pmv').textContent = avgPmv.toFixed(2);
+            const pmvDelta = document.getElementById('kpi-pmv-delta');
+            if (Math.abs(avgPmv) > 0.5) {
+                pmvDelta.textContent = 'Outside comfort band';
+                pmvDelta.className = 'kpi-delta bad';
+            } else if (Math.abs(avgPmv) > 0.3) {
+                pmvDelta.textContent = 'Approaching limit';
+                pmvDelta.className = 'kpi-delta warn';
+            } else {
+                pmvDelta.textContent = 'Comfortable';
+                pmvDelta.className = 'kpi-delta good';
+            }
+
+            const clampCount = Object.keys(t.guardrail_clamps).length;
+            document.getElementById('kpi-clamps').textContent = clampCount;
+            const clampDelta = document.getElementById('kpi-clamps-delta');
+            clampDelta.textContent = clampCount > 0 ? 'Active this tick' : 'No clamps';
+            clampDelta.className = clampCount > 0 ? 'kpi-delta warn' : 'kpi-delta good';
+
+            document.getElementById('kpi-carbon').textContent = t.grid_carbon_gco2_kwh.toFixed(0);
+            const carbonDelta = document.getElementById('kpi-carbon-delta');
+            if (t.grid_carbon_gco2_kwh > 550) {
+                carbonDelta.textContent = 'High carbon intensity';
+                carbonDelta.className = 'kpi-delta bad';
+            } else {
+                carbonDelta.textContent = 'Nominal';
+                carbonDelta.className = 'kpi-delta good';
+            }
+
+            // Planning
+            const planEl = document.getElementById('planning-content');
+            const modeClass = 'mode-' + (t.strategy.mode || 'balanced');
+            planEl.innerHTML = `
+                <div class="strategy-mode ${modeClass}">${t.strategy.strategy || t.strategy.mode}</div>
+                <p class="strategy-reasoning">${t.strategy.reasoning}</p>
+                <div style="margin-top:1.5rem; display:flex; gap:2rem;">
+                    <div><span class="bento-subtitle">Peak Cap</span><br><span style="font-weight:700; font-size:1.2rem; color:var(--text-heading);">${t.strategy.peak_demand_cap_kw} kW</span></div>
+                    <div><span class="bento-subtitle">PMV Target</span><br><span style="font-weight:700; font-size:1.2rem; color:var(--text-heading);">[${t.strategy.target_pmv_band[0]}, ${t.strategy.target_pmv_band[1]}]</span></div>
+                </div>
+            `;
+
+            // Perception
+            const percEl = document.getElementById('perception-content');
+            if (t.anomalies.length > 0) {
+                percEl.innerHTML = t.anomalies.map(a => `
+                    <div class="anomaly-item">
+                        <div class="anomaly-dot"></div>
+                        <div style="font-size:0.9rem; color:var(--text-heading);"><strong>${a.zone}</strong>: ${a.message}</div>
+                    </div>
+                `).join('');
+            } else {
+                percEl.innerHTML = '<div class="no-anomaly">All sensors nominal. No anomalies detected at this timestep.</div>';
+            }
+
+            // Reasoning
+            const reasonEl = document.getElementById('reasoning-content');
+            let tableRows = '';
+            for (const zone of DATA.metadata.zones) {
+                const prop = t.zone_proposals[zone] || {};
+                const coord = t.coordinator_decision[zone] || {};
+                const deltaH = ((coord.heating_c || 0) - (prop.heating_c || 0)).toFixed(1);
+                const deltaC = ((coord.cooling_c || 0) - (prop.cooling_c || 0)).toFixed(1);
+                const isConflict = Math.abs(deltaC) > 0.1 || Math.abs(deltaH) > 0.1;
+                const rowClass = isConflict ? 'conflict-row' : '';
+                const deltaHClass = deltaH > 0 ? 'delta-positive' : deltaH < 0 ? 'delta-negative' : 'delta-zero';
+                const deltaCClass = deltaC > 0 ? 'delta-positive' : deltaC < 0 ? 'delta-negative' : 'delta-zero';
+
+                tableRows += `<tr class="${rowClass}">
+                    <td class="zone-name">${zone}</td>
+                    <td>${prop.heating_c || '--'}</td>
+                    <td>${prop.cooling_c || '--'}</td>
+                    <td>${coord.heating_c || '--'}</td>
+                    <td>${coord.cooling_c || '--'}</td>
+                    <td class="${deltaHClass}">${deltaH > 0 ? '+' : ''}${deltaH}</td>
+                    <td class="${deltaCClass}">${deltaC > 0 ? '+' : ''}${deltaC}</td>
+                </tr>`;
+            }
+            reasonEl.innerHTML = `
+                <table class="proposals-table">
+                    <thead><tr>
+                        <th>Zone</th><th>Prop H (C)</th><th>Prop C (C)</th><th>Appr H (C)</th><th>Appr C (C)</th><th>Δ H</th><th>Δ C</th>
+                    </tr></thead>
+                    <tbody>${tableRows}</tbody>
+                </table>
+                <div style="margin-top:1.5rem; padding:1rem; background:rgba(99,91,255,0.05); border-radius:12px; font-size:0.9rem;">
+                    <strong style="color:var(--text-heading);">Coordinator:</strong> ${t.coordinator_reasoning}
+                </div>
+            `;
+
+            // Safety
+            const safetyEl = document.getElementById('safety-content');
+            let safetyHtml = '';
+            const overrides = Object.entries(t.comfort_overrides);
+            if (overrides.length > 0) {
+                for (const [zone, ov] of overrides) {
+                    safetyHtml += `<div class="alert-box alert-critical">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--accent-red); flex-shrink:0;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                        <div class="alert-text"><strong>EMERGENCY OVERRIDE: ${zone}</strong><br>${ov.reason}<br>Set to H:${ov.heating_c} / C:${ov.cooling_c}</div>
+                    </div>`;
+                }
+            }
+            const clamps = Object.entries(t.guardrail_clamps);
+            if (clamps.length > 0) {
+                for (const [zone, reason] of clamps) {
+                    safetyHtml += `<div class="alert-box alert-warning">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--accent-orange); flex-shrink:0;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                        <div class="alert-text"><strong style="color:var(--accent-orange);">CLAMP: ${zone}</strong><br>${reason}</div>
+                    </div>`;
+                }
+            }
+            if (!safetyHtml) { safetyHtml = '<div class="no-anomaly">All setpoints within safe bounds. No overrides or clamps this tick.</div>'; }
+            safetyEl.innerHTML = safetyHtml;
         }
-    }
 
-    if (!safetyHtml) {
-        safetyHtml = '<div class="no-alerts">All setpoints within safe bounds. No overrides or clamps this tick.</div>';
-    }
-    safetyEl.innerHTML = safetyHtml;
-}
-
-// --- Charts (vanilla Canvas) ---
-function drawCharts() {
-    if (!DATA) return;
-    drawLineChart('chart-energy', DATA.ticks.map(t => t.facility_total_kw), {
-        color: 'rgba(57, 210, 192, 1)',
-        fillColor: 'rgba(57, 210, 192, 0.08)',
-        thresholdY: DATA.ticks[currentTick].strategy.peak_demand_cap_kw || 50,
-        thresholdColor: 'rgba(248, 81, 73, 0.5)',
-        markerTick: currentTick,
-        yLabel: 'kW'
-    });
-    drawLineChart('chart-pmv', DATA.ticks.map(t => {
-        return t.zones.reduce((s, z) => s + z.pmv, 0) / t.zones.length;
-    }), {
-        color: 'rgba(63, 185, 80, 1)',
-        fillColor: 'rgba(63, 185, 80, 0.08)',
-        bandMin: -0.5,
-        bandMax: 0.5,
-        bandColor: 'rgba(63, 185, 80, 0.06)',
-        markerTick: currentTick,
-        yLabel: 'PMV'
-    });
-}
-
-function drawLineChart(canvasId, dataArr, opts) {
-    const canvas = document.getElementById(canvasId);
-    const ctx = canvas.getContext('2d');
-    const dpr = window.devicePixelRatio || 1;
-    const rect = canvas.parentElement.getBoundingClientRect();
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    ctx.scale(dpr, dpr);
-    const W = rect.width, H = rect.height;
-
-    ctx.clearRect(0, 0, W, H);
-
-    const pad = { top: 15, right: 15, bottom: 28, left: 45 };
-    const plotW = W - pad.left - pad.right;
-    const plotH = H - pad.top - pad.bottom;
-
-    const yMin = opts.bandMin !== undefined ? Math.min(Math.min(...dataArr) * 1.1, opts.bandMin * 1.3) : Math.min(...dataArr) * 0.85;
-    const yMax = opts.bandMax !== undefined ? Math.max(Math.max(...dataArr) * 1.1, opts.bandMax * 1.3) : Math.max(...dataArr) * 1.15;
-
-    const xScale = (i) => pad.left + (i / (dataArr.length - 1)) * plotW;
-    const yScale = (v) => pad.top + plotH - ((v - yMin) / (yMax - yMin)) * plotH;
-
-    // Grid lines
-    ctx.strokeStyle = 'rgba(56, 78, 112, 0.2)';
-    ctx.lineWidth = 0.5;
-    for (let i = 0; i <= 4; i++) {
-        const y = pad.top + (plotH / 4) * i;
-        ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
-        const val = yMax - (i / 4) * (yMax - yMin);
-        ctx.fillStyle = 'rgba(139, 148, 158, 0.7)';
-        ctx.font = '10px Inter';
-        ctx.textAlign = 'right';
-        ctx.fillText(val.toFixed(1), pad.left - 6, y + 3);
-    }
-
-    // X axis labels
-    ctx.fillStyle = 'rgba(139, 148, 158, 0.7)';
-    ctx.font = '9px Inter';
-    ctx.textAlign = 'center';
-    for (let i = 0; i < 48; i += 4) {
-        const h = Math.floor(i / 2);
-        ctx.fillText(`${h}:00`, xScale(i), H - 6);
-    }
-
-    // Safe band
-    if (opts.bandMin !== undefined) {
-        ctx.fillStyle = opts.bandColor;
-        ctx.fillRect(pad.left, yScale(opts.bandMax), plotW, yScale(opts.bandMin) - yScale(opts.bandMax));
-    }
-
-    // Threshold line
-    if (opts.thresholdY !== undefined) {
-        ctx.strokeStyle = opts.thresholdColor;
-        ctx.lineWidth = 1.5;
-        ctx.setLineDash([6, 4]);
-        ctx.beginPath();
-        ctx.moveTo(pad.left, yScale(opts.thresholdY));
-        ctx.lineTo(W - pad.right, yScale(opts.thresholdY));
-        ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.fillStyle = opts.thresholdColor;
-        ctx.font = '9px Inter';
-        ctx.textAlign = 'left';
-        ctx.fillText(`Cap: ${opts.thresholdY}`, W - pad.right - 45, yScale(opts.thresholdY) - 4);
-    }
-
-    // Line + fill
-    ctx.beginPath();
-    ctx.moveTo(xScale(0), yScale(dataArr[0]));
-    for (let i = 1; i < dataArr.length; i++) {
-        ctx.lineTo(xScale(i), yScale(dataArr[i]));
-    }
-    ctx.strokeStyle = opts.color;
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    // Fill under
-    ctx.lineTo(xScale(dataArr.length - 1), pad.top + plotH);
-    ctx.lineTo(xScale(0), pad.top + plotH);
-    ctx.closePath();
-    ctx.fillStyle = opts.fillColor;
-    ctx.fill();
-
-    // Current tick marker
-    if (opts.markerTick !== undefined) {
-        const mx = xScale(opts.markerTick);
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-        ctx.lineWidth = 1;
-        ctx.setLineDash([3, 3]);
-        ctx.beginPath(); ctx.moveTo(mx, pad.top); ctx.lineTo(mx, pad.top + plotH); ctx.stroke();
-        ctx.setLineDash([]);
-
-        // Dot
-        ctx.beginPath();
-        ctx.arc(mx, yScale(dataArr[opts.markerTick]), 4, 0, Math.PI * 2);
-        ctx.fillStyle = opts.color;
-        ctx.fill();
-        ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-    }
-}
-
-// --- Event Log ---
-function renderEventLog() {
-    if (!DATA) return;
-    const el = document.getElementById('event-log-content');
-    let allEvents = [];
-    for (const t of DATA.ticks) {
-        for (const ev of t.events) {
-            allEvents.push({ time: t.sim_time.substring(11, 16), ...ev });
+        // --- Charts ---
+        function drawCharts() {
+            if (!DATA) return;
+            drawLineChart('chart-energy', DATA.ticks.map(t => t.facility_total_kw), {
+                color: '#635BFF', fillColor: 'rgba(99,91,255,0.1)',
+                thresholdY: DATA.ticks[currentTick].strategy.peak_demand_cap_kw || 50,
+                thresholdColor: 'rgba(248, 81, 73, 0.5)', markerTick: currentTick
+            });
+            drawLineChart('chart-pmv', DATA.ticks.map(t => t.zones.reduce((s, z) => s + z.pmv, 0) / t.zones.length), {
+                color: '#39d2c0', fillColor: 'rgba(57,210,192,0.1)',
+                bandMin: -0.5, bandMax: 0.5, bandColor: 'rgba(57,210,192,0.05)', markerTick: currentTick
+            });
         }
-    }
-    if (allEvents.length === 0) {
-        el.innerHTML = '<div class="no-alerts">No crisis events recorded in this simulation run.</div>';
-        return;
-    }
-    el.innerHTML = allEvents.map(ev => {
-        const badgeClass = 'event-badge-' + ev.layer.toLowerCase();
-        return `<div class="event-item">
-            <span class="event-time">${ev.time}</span>
-            <span class="event-badge ${badgeClass}">${ev.layer}</span>
-            <span class="event-msg">${ev.message}</span>
-        </div>`;
-    }).join('');
-}
 
-// --- Video check ---
-function checkForVideo() {
-    const el = document.getElementById('video-content');
-    const video = document.createElement('video');
-    video.src = 'demo_video.mp4';
-    video.controls = true;
-    video.addEventListener('loadedmetadata', function() {
-        el.innerHTML = '';
-        el.appendChild(video);
-        const caption = document.createElement('p');
-        caption.className = 'video-caption';
-        caption.textContent = 'Recording of the full system running live: EnergyPlus physics engine + 7 LLM agents (qwen2.5:7b) coordinating via MCP. No mock data.';
-        el.appendChild(caption);
-    });
-}
+        function drawLineChart(canvasId, dataArr, opts) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width * dpr; canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+            const W = rect.width, H = rect.height;
+            ctx.clearRect(0, 0, W, H);
 
-// --- Resize handler ---
-window.addEventListener('resize', () => { if (DATA) drawCharts(); });
+            const pad = { top: 15, right: 15, bottom: 20, left: 35 };
+            const plotW = W - pad.left - pad.right; const plotH = H - pad.top - pad.bottom;
+            const yMin = opts.bandMin !== undefined ? Math.min(Math.min(...dataArr)*1.1, opts.bandMin*1.3) : Math.min(...dataArr)*0.85;
+            const yMax = opts.bandMax !== undefined ? Math.max(Math.max(...dataArr)*1.1, opts.bandMax*1.3) : Math.max(...dataArr)*1.15;
+            const xScale = (i) => pad.left + (i / (dataArr.length - 1)) * plotW;
+            const yScale = (v) => pad.top + plotH - ((v - yMin) / (yMax - yMin)) * plotH;
 
-// --- Init ---
-loadData();
-</script>
+            ctx.strokeStyle = 'rgba(10,37,64,0.1)'; ctx.lineWidth = 1;
+            for (let i = 0; i <= 4; i++) {
+                const y = pad.top + (plotH / 4) * i;
+                ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
+                const val = yMax - (i / 4) * (yMax - yMin);
+                ctx.fillStyle = '#8b9bb4'; ctx.font = '10px Inter'; ctx.textAlign = 'right';
+                ctx.fillText(val.toFixed(1), pad.left - 6, y + 3);
+            }
+
+            if (opts.bandMin !== undefined) {
+                ctx.fillStyle = opts.bandColor;
+                ctx.fillRect(pad.left, yScale(opts.bandMax), plotW, yScale(opts.bandMin) - yScale(opts.bandMax));
+            }
+            if (opts.thresholdY !== undefined) {
+                ctx.strokeStyle = opts.thresholdColor; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
+                ctx.beginPath(); ctx.moveTo(pad.left, yScale(opts.thresholdY)); ctx.lineTo(W - pad.right, yScale(opts.thresholdY)); ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            ctx.beginPath(); ctx.moveTo(xScale(0), yScale(dataArr[0]));
+            for (let i = 1; i < dataArr.length; i++) ctx.lineTo(xScale(i), yScale(dataArr[i]));
+            ctx.strokeStyle = opts.color; ctx.lineWidth = 2.5; ctx.stroke();
+            ctx.lineTo(xScale(dataArr.length - 1), pad.top + plotH); ctx.lineTo(xScale(0), pad.top + plotH);
+            ctx.closePath(); ctx.fillStyle = opts.fillColor; ctx.fill();
+
+            if (opts.markerTick !== undefined) {
+                const mx = xScale(opts.markerTick);
+                ctx.strokeStyle = 'rgba(10,37,64,0.2)'; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+                ctx.beginPath(); ctx.moveTo(mx, pad.top); ctx.lineTo(mx, pad.top + plotH); ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.beginPath(); ctx.arc(mx, yScale(dataArr[opts.markerTick]), 5, 0, Math.PI * 2);
+                ctx.fillStyle = opts.color; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+            }
+        }
+
+        // --- Event Log ---
+        function renderEventLog() {
+            if (!DATA) return;
+            const el = document.getElementById('event-log-content');
+            let allEvents = [];
+            for (const t of DATA.ticks) {
+                for (const ev of t.events) allEvents.push({ time: t.sim_time.substring(11, 16), ...ev });
+            }
+            if (allEvents.length === 0) { el.innerHTML = '<div class="no-anomaly">No events.</div>'; return; }
+            el.innerHTML = allEvents.map(ev => {
+                const badgeClass = 'event-badge-' + ev.layer.toLowerCase();
+                return `<div class="event-item">
+                    <span class="event-time">${ev.time}</span>
+                    <span class="event-badge ${badgeClass}">${ev.layer}</span>
+                    <span class="event-msg">${ev.message}</span>
+                </div>`;
+            }).join('');
+        }
+
+        function checkForVideo() {
+            const el = document.getElementById('video-content');
+            const video = document.createElement('video');
+            video.src = 'demo_video.mp4'; video.controls = true;
+            video.addEventListener('loadedmetadata', function() { el.innerHTML = ''; el.appendChild(video); });
+        }
+
+        // --- Animations ---
+        anime({ targets: '.anime-hero', translateY: [30, 0], opacity: [0, 1], easing: 'easeOutExpo', duration: 1200, delay: anime.stagger(150) });
+        anime({ targets: '.blob-1', translateX: ()=>anime.random(-30,30), translateY: ()=>anime.random(-30,30), scale: ()=>anime.random(1,1.1), easing: 'easeInOutSine', duration: 5000, direction: 'alternate', loop: true });
+        anime({ targets: '.blob-2', translateX: ()=>anime.random(-40,40), translateY: ()=>anime.random(-40,40), scale: ()=>anime.random(0.9,1.1), easing: 'easeInOutSine', duration: 6000, direction: 'alternate', loop: true });
+        anime({ targets: '.blob-3', translateX: ()=>anime.random(-20,20), translateY: ()=>anime.random(-20,20), scale: ()=>anime.random(0.9,1.1), easing: 'easeInOutSine', duration: 4500, direction: 'alternate', loop: true });
+        anime({ targets: '#marquee-container', translateX: ['0%', '-50%'], duration: 15000, easing: 'linear', loop: true });
+
+        const bentoObserver = new IntersectionObserver((entries, obs) => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    anime({ targets: '.anime-bento', scale: [0.95, 1], opacity: [0, 1], translateY: [30, 0], easing: 'spring(1, 80, 10, 0)', delay: anime.stagger(100) });
+                    obs.disconnect();
+                }
+            });
+        }, { threshold: 0.1 });
+        bentoObserver.observe(document.querySelector('.bento-section'));
+
+        window.addEventListener('resize', () => { if (DATA) drawCharts(); });
+        loadData();
+    </script>
 </body>
 </html>
