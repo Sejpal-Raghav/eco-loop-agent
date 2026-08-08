@@ -500,22 +500,22 @@
     EnergyPlus v26.1.0 &bull; qwen2.5:7b-instruct &bull; Model Context Protocol (MCP)
 </footer>
 
+<script src="demo_data.js"></script>
 <script>
 let DATA = null;
 let currentTick = 0;
 let playInterval = null;
 
 // --- Load Data ---
-async function loadData() {
-    try {
-        const resp = await fetch('demo_data.json');
-        DATA = await resp.json();
+function loadData() {
+    if (typeof DEMO_DATA !== 'undefined') {
+        DATA = DEMO_DATA;
         renderTick(0);
         drawCharts();
         renderEventLog();
         checkForVideo();
-    } catch (e) {
-        document.querySelector('.main').innerHTML = '<div class="section"><p style="color:var(--accent-red); padding:2rem;">Failed to load demo_data.json. Run <code>python scripts/generate_demo_data.py</code> first.</p></div>';
+    } else {
+        document.querySelector('.main').innerHTML = '<div class="section"><p style="color:var(--accent-red); padding:2rem;">Failed to load demo_data.js. Run <code>python scripts/generate_demo_data.py</code> first.</p></div>';
     }
 }
 

@@ -14,7 +14,7 @@ Output:
     logs/zone_proposals/*.json
     logs/coordinator_decision.json
     logs/comfort_overrides/*.json
-    dashboard/demo_data.json
+    dashboard/demo_data.js
 """
 
 import json
@@ -396,21 +396,24 @@ def main():
     override_count = sum(1 for t in all_ticks for _ in t['comfort_overrides'])
     print(f"  logs/comfort_overrides/ ({override_count} files)")
 
-    # --- Write consolidated dashboard JSON ---
-    with open(os.path.join(DASHBOARD_DIR, 'demo_data.json'), 'w') as f:
-        json.dump({
-            'metadata': {
-                'building': 'DOE RefBldg Small Office (Chicago)',
-                'weather': 'USA_IL_Chicago-OHare TMY3',
-                'model': 'qwen2.5:7b-instruct',
-                'zones': ZONES,
-                'ticks': 48,
-                'interval_minutes': 30,
-                'date': '2024-07-15'
-            },
-            'ticks': all_ticks
-        }, f, indent=2)
-    print(f"  dashboard/demo_data.json ({len(all_ticks)} ticks)")
+    # --- Write consolidated dashboard JS ---
+    demo_data_content = {
+        'metadata': {
+            'building': 'DOE RefBldg Small Office (Chicago)',
+            'weather': 'USA_IL_Chicago-OHare TMY3',
+            'model': 'qwen2.5:7b-instruct',
+            'zones': ZONES,
+            'ticks': 48,
+            'interval_minutes': 30,
+            'date': '2024-07-15'
+        },
+        'ticks': all_ticks
+    }
+    with open(os.path.join(DASHBOARD_DIR, 'demo_data.js'), 'w') as f:
+        f.write("const DEMO_DATA = ")
+        json.dump(demo_data_content, f, indent=2)
+        f.write(";\n")
+    print(f"  dashboard/demo_data.js ({len(all_ticks)} ticks)")
 
     # --- Summary ---
     total_energy = sum(t['facility_total_kw'] for t in all_ticks) * 0.5  # kWh (30 min intervals)
