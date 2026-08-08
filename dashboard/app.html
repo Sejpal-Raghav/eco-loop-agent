@@ -13,28 +13,28 @@
          DESIGN SYSTEM — TOKENS
       ───────────────────────────────────────────────── */
       :root {
-        --bg-page:      #0D0E0E;
-        --bg-raised:    #151616;
-        --bg-elevated:  #181919;
-        --bg-overlay:   #1B1C1C;
-        --bg-mono:      #101111;
+        --bg-page:      #080A0F;
+        --bg-raised:    #11161D;
+        --bg-elevated:  #151B24;
+        --bg-overlay:   #1A212B;
+        --bg-mono:      #0B0E14;
 
-        --border-subtle:  #242525;
-        --border-default: #292A2A;
-        --border-strong:  #303131;
-        --border-active:  #4A4C4C;
+        --border-subtle:  #1C2430;
+        --border-default: #253040;
+        --border-strong:  #324056;
+        --border-active:  #475975;
 
-        --text-primary:   #F4F1ED;
-        --text-secondary: #C3C0B8;
-        --text-muted:     #8C8982;
+        --text-primary:   #F8FAF0;
+        --text-secondary: #94A3B8;
+        --text-muted:     #64748B;
 
-        --accent:         #D4CFC6;
-        --accent-dim:     #8A8780;
+        --accent:         #ffc65c;
+        --accent-dim:     rgba(255, 198, 92, 0.2);
 
         --success:  #7A9E7A;
-        --warning:  #B89A5A;
+        --warning:  #ffc65c;
         --error:    #A06060;
-        --running:  #C8B880;
+        --running:  #ffc65c;
 
         --font: 'Inter', system-ui, -apple-system, sans-serif;
         --mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
@@ -178,18 +178,17 @@
         background: var(--border-subtle); flex-shrink: 0;
         transition: background 0.5s ease;
       }
-      .wf-connector.lit { background: var(--accent-dim); }
+      .wf-connector.lit { background: var(--accent); box-shadow: 0 0 8px var(--accent-dim); }
 
       .wf-stage { display: flex; justify-content: center; gap: 1.5rem; width: 100%; border: 1px solid transparent; border-radius: var(--radius); padding: 0.5rem; transition: all 0.3s ease; }
-      .wf-stage.s-active-layer { border-color: var(--border-active); background: var(--bg-elevated); }
+      .wf-stage.s-active-layer { border-color: var(--accent-dim); background: var(--bg-elevated); box-shadow: 0 0 15px rgba(255, 198, 92, 0.05); }
 
-      /* Parallel block */
       .wf-parallel-block {
         width: 100%; display: flex; flex-direction: column; align-items: center;
         border: 1px solid var(--border-subtle); border-radius: var(--radius); overflow: hidden;
         transition: all 0.3s ease;
       }
-      .wf-parallel-block.s-active-layer { border-color: var(--border-active); background: var(--bg-elevated); }
+      .wf-parallel-block.s-active-layer { border-color: var(--accent-dim); background: var(--bg-elevated); box-shadow: 0 0 15px rgba(255, 198, 92, 0.05); }
       
       .wf-parallel-label {
         font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted);
@@ -223,7 +222,7 @@
       .node-duration { font-family: var(--mono); font-size: 0.7rem; color: var(--text-muted); }
 
       /* Status states */
-      .agent-node.s-running { border-color: var(--running); background: rgba(200,184,128,0.03); }
+      .agent-node.s-running { border-color: var(--running); background: rgba(255, 198, 92, 0.05); box-shadow: 0 0 12px rgba(255, 198, 92, 0.1); }
       .agent-node.s-running .status-dot { background: var(--running); }
       .agent-node.s-running .node-status-badge { color: var(--running); }
 
