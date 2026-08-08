@@ -65,7 +65,19 @@
     font-size: 0.8rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--color-amber); font-weight: 500;
   }
 
-  /* AUDIO CTA */
+  /* AUDIO CTA & PRIMARY CTA */
+  .nav-actions {
+    display: flex; gap: 1rem; pointer-events: auto;
+  }
+  .primary-cta {
+    display: flex; align-items: center; justify-content: center;
+    background: var(--color-amber); color: #000; text-decoration: none;
+    font-weight: 600; padding: 0 1.5rem; border-radius: 40px; font-size: 0.95rem;
+    transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(255, 198, 92, 0.1);
+  }
+  .primary-cta:hover {
+    background: #ffdf8c; box-shadow: 0 6px 20px rgba(255, 198, 92, 0.3); transform: translateY(-1px);
+  }
   .audio-cta {
     pointer-events: auto;
     display: flex;
@@ -151,15 +163,20 @@
       <div class="tag">Cognitive Building Intelligence</div>
     </div>
     
-    <a href="app.html?experience=voiceover" class="audio-cta">
-      <div class="audio-cta-icon">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-      </div>
-      <div class="audio-cta-text">
-        <span class="audio-cta-title">Listen to Voiceover</span>
-        <span class="audio-cta-sub">Skip reading & launch simulation</span>
-      </div>
-    </a>
+    <div class="nav-actions">
+      <a href="app.html" class="primary-cta">
+        Launch Dashboard
+      </a>
+      <a href="app.html?experience=voiceover" class="audio-cta">
+        <div class="audio-cta-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+        </div>
+        <div class="audio-cta-text">
+          <span class="audio-cta-title">Listen to Voiceover</span>
+          <span class="audio-cta-sub">Skip reading & launch simulation</span>
+        </div>
+      </a>
+    </div>
   </div>
 
   <div class="context-row">
