@@ -46,8 +46,13 @@ new_html = """    <style>
         text-align: center;
       }
       .blog-article .mermaid {
-        display: inline-block;
-        min-width: min-content;
+        width: 100%;
+        min-width: 700px;
+      }
+      .blog-article .mermaid svg {
+        width: 100% !important;
+        height: auto !important;
+        max-width: none !important;
       }
     </style>
     
