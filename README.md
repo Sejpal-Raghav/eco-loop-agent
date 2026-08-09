@@ -1,64 +1,47 @@
-# Eco-Loop: Cognitive Multi-Agent Building Intelligence Platform
+# Eco-Loop: Cognitive Building Intelligence
 
-**Eco-Loop** is a 5-layer cognitive architecture for autonomous building energy management. It coordinates **7 concurrent LLM agents** (Planner, 5 Zone Agents, Coordinator, Comfort Auditor) through a Model Context Protocol (MCP) server to control a physics-accurate EnergyPlus simulation in real time.
+Buildings consume approximately 40% of global energy and remain a primary driver of carbon emissions. Traditional Building Management Systems (BMS) rely on rigid, rule-based schedules that fail to adapt dynamically to real-time changes in weather, occupancy, and grid demands. 
 
----
-
-## Quick Demo (No EnergyPlus Required)
-
-See the full multi-agent workflow in action with pre-generated simulation data:
-
-```bash
-python scripts/generate_demo_data.py
-```
-Then open `dashboard/index.html` in your browser. Use the timeline scrubber to step through 24 hours of agent coordination, including 3 crisis events that demonstrate each cognitive layer.
+**Eco-Loop** transforms the building from a passive energy consumer into an active, self-correcting agent capable of continuous, real-time optimization. It is an autonomous, closed-loop control pipeline driven entirely by open-source Large Language Models (LLMs) communicating via the Model Context Protocol (MCP).
 
 ---
 
-## The Problem Statement
+## The 5-Layer Distributed Cognitive Stack
 
-Commercial and residential buildings currently consume approximately 40% of global energy. A massive portion of this energy footprint is wasted due to a single, pervasive root cause: legacy Building Management Systems operate on static, rule-based schedules.
-
-A traditional BMS is typically programmed with fixed heuristics. This approach is blind to dynamic, real-world context. The system does not know if the current day is unseasonably cool, if building occupancy is drastically lower than expected due to a holiday, or if the regional power grid is currently experiencing high carbon intensity. The system simply executes the static rule, leading to over-conditioning and substantial energy waste.
-
-## The Eco-Loop Solution
-
-Eco-Loop replaces this passive rule layer with a **predictive, self-correcting multi-agent system**. The 5 cognitive layers work together:
+Attempting to run a building on a single monolithic LLM prompt leads to context bloat, extreme latency, and dangerous hallucinations. Instead, Eco-Loop distributes the workload across **7 concurrent LLM agents** organized into a strict, 5-layer hierarchical execution pipeline:
 
 | Layer | Agent(s) | Role |
 |---|---|---|
-| **Planning** | Forecast Planner | Reads 24-hour weather forecast and grid carbon intensity to set a building-wide strategy (e.g., "pre-cool overnight") |
-| **Reasoning** | 5 Zone Agents + Coordinator | Each zone proposes setpoints independently; the Coordinator resolves conflicts and enforces a peak demand cap |
-| **Perception** | State Compressor + Anomaly Detector | Cleans and compresses sensor data; flags impossible readings before agents see them |
-| **Memory** | Decision Store + Performance Tracker | Agents receive their last 3 decisions (and whether they were clamped) enabling true self-correction |
-| **Safety** | Comfort Auditor + Guardrail Engine | Independent watchdog that can bypass all other layers if PMV exits the [-0.5, +0.5] comfort band |
+| **Perception** | State Compressor + Anomaly Detector | Cleans and compresses raw EnergyPlus sensor data into a concise semantic state summary to reduce token latency. |
+| **Memory** | Outcome Memory | Tracks previous decisions and their outcomes, enabling true self-correction. |
+| **Planning** | Forecast Planner | Wakes every 6 hours to read weather and carbon intensity, establishing a macro-strategy and peak demand cap for the facility. |
+| **Reasoning** | 5 Zone Agents + Coordinator | Independent zone agents propose localized setpoints every 30 mins. The Coordinator actively negotiates conflicts to balance comfort against the facility demand cap. |
+| **Safety** | Comfort Auditor + Guardrail Engine | A strictly deterministic layer that clamps any LLM hallucination exceeding 3°C delta or violating the Predicted Mean Vote (PMV) comfort band. |
 
+*For a comprehensive breakdown of the architecture, data flow, and the negotiation protocol, read the [Technical Blog](dashboard/blog.html).*
 
-## Technical Architecture
+---
 
-The Eco-Loop system is built upon a non-blocking, highly decoupled architecture designed to ensure extreme reliability over extended, multi-week simulation horizons. 
+## Interactive Dashboard & Workflow Visualization
 
-1. **Simulation Engine (EnergyPlus v26.1.0 & pyenergyplus):** 
-   Eco-Loop utilizes the industry-standard EnergyPlus engine to run high-fidelity physics simulations on the DOE Reference Small Office building (`RefBldgSmallOfficeNew2004_Chicago.idf`). We interface with the simulation via the `pyenergyplus` API, intercepting the Energy Management System (EMS) callbacks at every simulation timestep to read sensor data and apply actuator overrides specifically for `CORE_ZN`.
+Eco-Loop includes a premium, interactive web dashboard to visualize the multi-agent reasoning process and view the quantifiable energy savings.
 
-2. **Python Bridge (`bridge/ep_runner.py`):** 
-   The bridge serves as the core orchestration layer. It manages the lifecycle of the EnergyPlus process, aggregates raw sensor data, and executes safety guardrails. If the LLM agent times out or disconnects, the bridge acts as a fallback, gracefully maintaining the previous setpoints to prevent simulation hangs.
+### Quick Demo (No EnergyPlus Required)
 
-3. **State Compressor (`bridge/state_compressor.py`):** 
-   Because EnergyPlus generates data at a high frequency, feeding raw timestep logs into an LLM would quickly exhaust its context window. The State Compressor condenses this data into a compact 30-minute rolling JSON state summary, providing the agent with the necessary context without the noise.
+You can see the full multi-agent workflow in action using pre-generated simulation data:
 
-4. **MCP Server (`mcp_server/server.py`):** 
-   Built using the Model Context Protocol (MCP) via `FastMCP`, this server exposes the building's internal state and allowable control levers (such as `propose_setpoint`) to the LLM agent using standardized tool-calling schemas.
+1. Generate the simulated data:
+   ```bash
+   python scripts/generate_demo_data.py
+   ```
+2. Open `dashboard/index.html` in your web browser. 
+3. Click "Launch dashboard" to use the timeline scrubber and step through 24 hours of agent coordination, including crisis events that demonstrate each cognitive layer reacting in real-time.
 
-5. **LLM Agent (`agent/client.py`):** 
-   An asynchronous client that connects to the MCP Server and queries a locally hosted Ollama model (`qwen2.5:7b-instruct`). The agent evaluates the compressed state summary against its system prompt, generates a reasoning trace, and determines the optimal heating and cooling setpoints.
+---
 
-6. **Safety Guardrails (`bridge/guardrails.py`):**
-   To prevent LLM hallucinations from destabilizing the building environment, all proposed actions must pass through a strict guardrail layer. This includes PMV (Predicted Mean Vote) boundary repulsion, which aggressively clamps setpoint proposals that would push occupant thermal comfort outside the acceptable [-0.5, +0.5] band, as well as an absolute heating floor of 18.0°C.
+## Full Simulation Quickstart
 
-For an in-depth breakdown of the system integration, safety guardrails, and fault isolation mechanisms, please see the [ARCHITECTURE.md](ARCHITECTURE.md) document.
-
-## Quickstart Guide
+To run the live, closed-loop pipeline yourself, Eco-Loop uses **EnergyPlus** as a high-fidelity digital building sandbox.
 
 ### Prerequisites
 1. **EnergyPlus:** Ensure EnergyPlus v26.1.0 is installed on your local machine at `C:\EnergyPlusV26-1-0` (update the `EPLUS_DIR` variable in `bridge/ep_runner.py` if your path differs).
@@ -72,13 +55,12 @@ For an in-depth breakdown of the system integration, safety guardrails, and faul
    ```
 
 ### Setup Instructions
-To run the simulation, you must provide the specific EnergyPlus model files:
 1. Place the `RefBldgSmallOfficeNew2004_Chicago.idf` file into `models/baseline.idf`.
 2. Place a copy of that IDF into `models/agent_model.idf` and add the EMS Actuators `Cooling_Setpoint_Actuator` and `Heating_Setpoint_Actuator` bound to `CORE_ZN`'s Zone Temperature Control.
 3. Add `Output:EnergyManagementSystem, Verbose, Verbose, Verbose;` to `agent_model.idf` for diagnostics.
 4. Place the `USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw` weather file into `models/weather.epw`.
 
-## Running the Simulation
+### Running the Live Pipeline
 
 You will need to run the pipeline across three concurrent terminal windows to observe the closed-loop agent in action.
 
