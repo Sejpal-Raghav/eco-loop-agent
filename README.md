@@ -2,8 +2,6 @@
 
 **Eco-Loop** is a 5-layer cognitive architecture for autonomous building energy management. It coordinates **7 concurrent LLM agents** (Planner, 5 Zone Agents, Coordinator, Comfort Auditor) through a Model Context Protocol (MCP) server to control a physics-accurate EnergyPlus simulation in real time.
 
-**[Watch the Demo Video](https://drive.google.com/file/d/12aPcBYq61TVJfzHJzMN_OQ-evPPmDOMM/view?usp=sharing)**
-
 ---
 
 ## Quick Demo (No EnergyPlus Required)
