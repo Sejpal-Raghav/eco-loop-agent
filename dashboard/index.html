@@ -4,674 +4,540 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Eco-Loop — Cognitive Building Intelligence</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --color-accent: #00f0ff;
-    --color-text-main: #ffffff;
-    --color-text-muted: rgba(255, 255, 255, 0.6);
+    --bg: #121820;
+    --bg-raised: #1a222b;
+    --line: #313d47;
+    --line-soft: rgba(255,255,255,0.05);
+    --text: #edf1ef;
+    --text-muted: #8fa0aa;
+    --text-dim: #5f707a;
+    --accent: #e8a33d;
+    --accent-dim: #b9832f;
+    --accent-ink: #17130a;
+    --flow: #5fa8a0;
+
+    --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+    --font-sans: 'IBM Plex Sans', -apple-system, sans-serif;
   }
+
+  * { box-sizing: border-box; }
 
   body, html {
-    margin: 0; padding: 0; width: 100%; height: 100%;
-    overflow: hidden; background-color: #05070a;
-    font-family: 'Inter', sans-serif;
-  }
-  
-  /* --- THREE.JS BACKGROUND --- */
-  #bg-canvas-container { position: fixed; inset: 0; z-index: 0; }
-  #cursor-glow {
-    position: fixed; top: 0; left: 0; width: 260px; height: 260px;
-    margin-left: -130px; margin-top: -130px; border-radius: 50%;
-    pointer-events: none; z-index: 5; opacity: 0;
-    background: radial-gradient(circle, rgba(0,240,255,0.10) 0%, rgba(0,240,255,0) 70%);
-    transition: opacity 0.4s ease;
-    will-change: transform;
-  }
-  
-  #loading-veil {
-    position: fixed; inset: 0; z-index: 50; background: #05070a;
-    display: flex; align-items: center; justify-content: center;
-    transition: opacity 1s ease;
-  }
-  #loading-veil span {
-    color: rgba(0,240,255,0.6); font-size: 0.75rem; letter-spacing: 0.3em;
-    text-transform: uppercase; font-weight: 300;
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
   }
 
-  /* --- UI LAYOUT --- */
-  .ui-layer {
-    position: relative; z-index: 10; height: 100vh; width: 100%;
-    display: flex; flex-direction: column; justify-content: space-between;
-    pointer-events: none; /* Let clicks pass through */
-    padding: 3rem 4rem;
-    box-sizing: border-box;
+  a { color: inherit; }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
 
-  /* HEADER */
-  .header-row {
+  .page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2.5rem;
+  }
+
+  /* ---------- HEADER ---------- */
+
+  .site-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-  }
-  
-  .brand {
-    pointer-events: auto;
-  }
-  .brand h1 {
-    font-size: 2.5rem; margin: 0 0 0.25rem 0; font-weight: 600; letter-spacing: -0.02em; color: var(--color-text-main);
-  }
-  .brand .tag {
-    font-size: 0.8rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--color-accent); font-weight: 500;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+    padding: 1.75rem 0 1.5rem;
+    border-bottom: 1px solid var(--line);
   }
 
-  /* AUDIO CTA & PRIMARY CTA */
-  .nav-actions {
-    display: flex; gap: 1rem; pointer-events: auto;
+  .brand {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
   }
-  .primary-cta {
-    display: flex; align-items: center; justify-content: center;
-    background: var(--color-accent); color: #000; text-decoration: none;
-    font-weight: 600; padding: 0 1.5rem; border-radius: 40px; font-size: 0.95rem;
-    transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0, 240, 255, 0.1);
+  .brand .wordmark {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 1.15rem;
+    letter-spacing: 0.06em;
   }
-  .primary-cta:hover {
-    background: #66f6ff; box-shadow: 0 6px 20px rgba(0, 240, 255, 0.3); transform: translateY(-1px);
+  .brand .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-muted);
   }
-  .audio-cta {
-    pointer-events: auto;
+
+  .header-right {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 40px;
-    padding: 0.75rem 1.5rem 0.75rem 1rem;
-    text-decoration: none;
-    color: var(--color-text-main);
-    transition: all 0.3s ease;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    gap: 1.75rem;
+    flex-wrap: wrap;
   }
-  .audio-cta:hover {
-    background: rgba(0, 240, 255, 0.08);
-    border-color: rgba(0, 240, 255, 0.3);
+
+  .status {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
   }
-  .audio-cta-icon {
-    width: 36px; height: 36px;
+  .status-dot {
+    width: 6px; height: 6px;
     border-radius: 50%;
-    background: var(--color-accent);
-    display: flex; align-items: center; justify-content: center;
-    color: #000;
+    background: var(--accent);
+    animation: pulse-dot 2.4s ease-in-out infinite;
   }
-  .audio-cta-text {
-    display: flex; flex-direction: column;
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
   }
-  .audio-cta-title { font-size: 0.85rem; font-weight: 600; }
-  .audio-cta-sub { font-size: 0.7rem; color: var(--color-text-muted); }
 
-  /* BOTTOM CONTENT */
-  .context-row {
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent);
+    color: var(--accent-ink);
+    text-decoration: none;
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 0.6rem 1.1rem;
+    border-radius: 4px;
+    transition: background 0.15s ease;
+  }
+  .btn-primary:hover { background: var(--accent-dim); }
+
+  .link-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    border-bottom: 1px solid transparent;
+    padding-bottom: 2px;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .link-secondary:hover {
+    color: var(--text);
+    border-color: var(--line);
+  }
+  .link-secondary svg { flex-shrink: 0; }
+
+  /* ---------- HERO ---------- */
+
+  .hero {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
+    gap: 3.5rem;
+    align-items: center;
+    padding: 3.5rem 0 4rem;
+  }
+
+  .hero h1 {
+    font-size: clamp(1.9rem, 3.2vw, 2.6rem);
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0 0 1.1rem;
+  }
+  .hero p {
+    font-size: 1rem;
+    line-height: 1.65;
+    color: var(--text-muted);
+    margin: 0 0 1.5rem;
+    max-width: 46ch;
+  }
+  .hero-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.2rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    letter-spacing: 0.03em;
+  }
+  .hero-tags span::before {
+    content: "· ";
+    color: var(--flow);
+  }
+  .hero-tags span:first-child::before { content: ""; }
+
+  /* ---------- SCHEMATIC (signature element) ---------- */
+
+  .schematic {
+    border: 1px solid var(--line);
+    background:
+      repeating-linear-gradient(0deg, var(--line-soft) 0 1px, transparent 1px 28px),
+      repeating-linear-gradient(90deg, var(--line-soft) 0 1px, transparent 1px 28px),
+      var(--bg-raised);
+    padding: 1.1rem;
+    border-radius: 4px;
+  }
+
+  .coordinator-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    padding: 0.55rem 0.85rem;
+    border-radius: 3px;
+  }
+  .coordinator-bar .label {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .coordinator-bar .label .status-dot { background: var(--flow); }
+  .coordinator-bar .cap {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--text-muted);
+  }
+  .cap-value { color: var(--text); font-weight: 500; }
+
+  .riser {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    height: 22px;
+  }
+  .riser-line {
+    justify-self: center;
+    width: 2px;
+    height: 100%;
+    background-image: repeating-linear-gradient(to bottom, var(--flow) 0 4px, transparent 4px 9px);
+    background-size: 2px 18px;
+    opacity: 0.75;
+    animation: flow-up 900ms linear infinite;
+  }
+  @keyframes flow-up {
+    from { background-position-y: 18px; }
+    to   { background-position-y: 0; }
+  }
+
+  .zone-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+  }
+  .zone-cell {
+    background: var(--bg-raised);
+    padding: 0.5rem 0.6rem;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+  .zone-id {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    color: var(--text-dim);
+    letter-spacing: 0.04em;
+    margin-bottom: 0.2rem;
+  }
+  .zone-value {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-muted);
+  }
+  .zone-cell.is-negotiating {
+    background: rgba(232,163,61,0.1);
+  }
+  .zone-cell.is-negotiating .zone-value {
+    color: var(--accent);
+  }
+  .zone-cell.is-negotiating .zone-id {
+    color: var(--accent-dim);
+  }
+
+  .schematic-caption {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    margin: 0.75rem 0.1rem 0;
+    letter-spacing: 0.02em;
+  }
+
+  /* ---------- ANALYSIS (problem / solution) ---------- */
+
+  .analysis {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 3rem;
-    pointer-events: auto;
-    max-width: 1400px;
-    margin: 0 auto;
-    padding-bottom: 2rem;
+    padding: 2.5rem 0;
+    border-top: 1px solid var(--line);
+  }
+  .analysis-block .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    color: var(--flow);
+    margin-bottom: 0.6rem;
+    display: block;
+  }
+  .analysis-block h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0 0 0.7rem;
+    letter-spacing: -0.005em;
+  }
+  .analysis-block p {
+    font-size: 0.92rem;
+    line-height: 1.65;
+    color: var(--text-muted);
+    margin: 0;
   }
 
-  .context-block {
-    background: linear-gradient(to top, rgba(5, 7, 10, 0.8) 0%, transparent 100%);
-    padding: 2rem;
-    border-radius: 16px;
+  /* ---------- PIPELINE (architecture) ---------- */
+
+  .pipeline-section {
+    padding: 2.5rem 0 4rem;
+    border-top: 1px solid var(--line);
+  }
+  .pipeline-section .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    color: var(--flow);
+    display: block;
+    margin-bottom: 1.5rem;
   }
 
-  .context-block h2 {
-    font-size: 1.25rem; font-weight: 500; color: var(--color-text-main); margin: 0 0 1rem 0; letter-spacing: -0.01em;
-    display: flex; align-items: center; gap: 0.75rem;
+  .pipeline {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
   }
-  .context-block h2::before {
-    content: ""; display: block; width: 16px; height: 2px; background: var(--color-text-muted); border-radius: 2px;
+  .pipeline-step {
+    flex: 1;
+    padding: 0 1.1rem;
+    position: relative;
   }
-  .context-block.solution h2::before { background: var(--color-accent); }
-  .context-block.architecture h2::before { background: #3b82f6; }
+  .pipeline-step:first-child { padding-left: 0; }
+  .pipeline-step:last-child { padding-right: 0; }
 
-  .context-block p {
-    font-size: 0.95rem; line-height: 1.6; color: var(--color-text-muted); margin: 0; font-weight: 300;
+  .pipeline-connector {
+    display: flex;
+    align-items: center;
+    color: var(--text-dim);
+    padding: 0 0.4rem;
+    font-size: 1rem;
   }
 
-  .arch-list {
-    margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 0.6rem;
+  .step-number {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 0.5rem;
   }
-  .arch-list li {
-    font-size: 0.9rem; color: var(--color-text-muted); line-height: 1.4; font-weight: 300;
+  .step-label {
+    font-weight: 600;
+    font-size: 0.92rem;
+    margin: 0 0 0.4rem;
   }
-  .arch-list strong { color: var(--color-text-main); font-weight: 500; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; }
+  .step-desc {
+    font-size: 0.83rem;
+    line-height: 1.55;
+    color: var(--text-muted);
+    margin: 0;
+  }
 
-  /* RESPONSIVE */
-  @media (max-width: 900px) {
-    .ui-layer { padding: 2rem; }
-    .header-row { flex-direction: column; gap: 2rem; }
-    .context-row { grid-template-columns: 1fr; gap: 2rem; padding-bottom: 0; }
-    .brand h1 { font-size: 2rem; }
+  /* ---------- RESPONSIVE ---------- */
+
+  @media (max-width: 880px) {
+    .page { padding: 0 1.5rem; }
+    .hero { grid-template-columns: 1fr; padding: 2.5rem 0 3rem; }
+    .analysis { grid-template-columns: 1fr; gap: 2rem; }
+    .pipeline { flex-direction: column; }
+    .pipeline-step { padding: 0 0 1.3rem !important; }
+    .pipeline-connector { display: none; }
+    .site-header { padding: 1.5rem 0 1.25rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .status-dot, .riser-line { animation: none; opacity: 1; }
   }
 </style>
 </head>
 <body>
 
-<div id="loading-veil"><span>Initializing systems…</span></div>
-<div id="bg-canvas-container"></div>
-<div id="cursor-glow"></div>
+<div class="page">
 
-<div class="ui-layer">
-  
-  <div class="header-row">
+  <header class="site-header">
     <div class="brand">
-      <h1>Eco-Loop</h1>
-      <div class="tag">Cognitive Building Intelligence</div>
+      <span class="wordmark">ECO-LOOP</span>
+      <span class="eyebrow">Cognitive Building Intelligence</span>
     </div>
-    
-    <div class="nav-actions">
-      <a href="app.html" class="primary-cta">
-        Launch Dashboard
-      </a>
-      <a href="app.html?experience=voiceover" class="audio-cta">
-        <div class="audio-cta-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-        </div>
-        <div class="audio-cta-text">
-          <span class="audio-cta-title">Listen to Voiceover</span>
-          <span class="audio-cta-sub">Skip reading & launch simulation</span>
-        </div>
-      </a>
+    <div class="header-right">
+      <div class="status">
+        <span class="status-dot"></span>
+        <span>12 zones online</span>
+      </div>
+      <div class="nav-actions">
+        <a href="app.html?experience=voiceover" class="link-secondary">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          Listen instead
+        </a>
+        <a href="app.html" class="btn-primary">Launch dashboard</a>
+      </div>
     </div>
-  </div>
+  </header>
 
-  <div class="context-row">
-    <div class="context-block">
-      <h2>The Problem</h2>
-      <p>Modern commercial HVAC systems are fundamentally reactive and isolated. Controlled by rigid PID loops and static schedules, independent zones compete for central plant resources without global context. This lack of cooperative negotiation and predictive awareness (weather, grid carbon intensity) results in massive thermodynamic inefficiencies and up to 30% wasted energy consumption.</p>
-    </div>
-    <div class="context-block solution">
-      <h2>The Solution</h2>
-      <p>Eco-Loop replaces static control heuristics with a distributed, multi-agent LLM swarm acting as a cognitive nervous system. Using the Model Context Protocol (MCP), autonomous agents dynamically perceive localized zone states, negotiate setpoint proposals under load pressure, and execute synchronized strategies to optimize the facility's global thermodynamic state while enforcing strict peak-demand caps.</p>
-    </div>
-    <div class="context-block architecture">
-      <h2>The Architecture</h2>
-      <ul class="arch-list">
-        <li><strong>1. Perception:</strong> Compresses raw telemetry and filters anomalies.</li>
-        <li><strong>2. Memory:</strong> Injects historical state-action feedback for zero-shot self-correction.</li>
-        <li><strong>3. Planning:</strong> Analyzes 24h forecast data to dictate global energy caps.</li>
-        <li><strong>4. Reasoning:</strong> Zone agents negotiate proposals via a master Coordinator.</li>
-        <li><strong>5. Safety:</strong> A deterministic Guardrail Engine clamps hallucinated setpoints before actuator execution.</li>
-      </ul>
-    </div>
-  </div>
+  <main>
 
+    <section class="hero">
+      <div class="hero-copy">
+        <h1>Buildings that negotiate their own energy use.</h1>
+        <p>Eco-Loop runs a small agent in every HVAC zone. Each one reads local conditions, proposes a setpoint, and sends it to a coordinator that weighs every zone's request against the building's overall energy cap before anything reaches the equipment.</p>
+        <div class="hero-tags">
+          <span>Model Context Protocol</span>
+          <span>24h load forecasting</span>
+          <span>Deterministic setpoint guardrails</span>
+        </div>
+      </div>
+
+      <div class="schematic" aria-hidden="true">
+        <div class="coordinator-bar">
+          <span class="label"><span class="status-dot"></span>COORDINATOR</span>
+          <span class="cap">demand cap · <span class="cap-value">318 kW</span></span>
+        </div>
+        <div class="riser">
+          <div class="riser-line"></div>
+          <div class="riser-line"></div>
+          <div class="riser-line"></div>
+        </div>
+        <div class="zone-grid" id="zoneGrid">
+          <!-- zone cells injected below -->
+        </div>
+      </div>
+
+    </section>
+
+    <section class="analysis">
+      <div class="analysis-block">
+        <span class="eyebrow">THE PROBLEM</span>
+        <h2>Every zone runs on its own</h2>
+        <p>Commercial HVAC is typically controlled by fixed schedules and independent PID loops per zone. Without shared context — what neighboring zones need, what the weather is about to do, how much headroom the grid has — the plant ends up fighting itself. That isolation commonly wastes up to 30% of total energy consumption.</p>
+      </div>
+      <div class="analysis-block">
+        <span class="eyebrow">THE SOLUTION</span>
+        <h2>Local proposals, central arbitration</h2>
+        <p>Each zone gets its own lightweight agent that watches local telemetry and proposes changes when conditions call for it. Proposals travel over the Model Context Protocol to a coordinator, which reconciles competing requests against a sitewide demand cap and forecast data before dispatching any command.</p>
+      </div>
+    </section>
+
+    <section class="pipeline-section">
+      <span class="eyebrow">ARCHITECTURE — REQUEST PIPELINE</span>
+      <div class="pipeline">
+        <div class="pipeline-step">
+          <span class="step-number">01</span>
+          <p class="step-label">Perception</p>
+          <p class="step-desc">Compresses raw zone telemetry and filters sensor anomalies before anything else runs.</p>
+        </div>
+        <div class="pipeline-connector">→</div>
+        <div class="pipeline-step">
+          <span class="step-number">02</span>
+          <p class="step-label">Memory</p>
+          <p class="step-desc">Injects prior state-action outcomes so an agent can self-correct without retraining.</p>
+        </div>
+        <div class="pipeline-connector">→</div>
+        <div class="pipeline-step">
+          <span class="step-number">03</span>
+          <p class="step-label">Planning</p>
+          <p class="step-desc">Reads 24-hour weather and grid-carbon forecasts to set the building's global energy cap.</p>
+        </div>
+        <div class="pipeline-connector">→</div>
+        <div class="pipeline-step">
+          <span class="step-number">04</span>
+          <p class="step-label">Reasoning</p>
+          <p class="step-desc">Zone agents negotiate setpoint proposals with the coordinator under that cap.</p>
+        </div>
+        <div class="pipeline-connector">→</div>
+        <div class="pipeline-step">
+          <span class="step-number">05</span>
+          <p class="step-label">Safety</p>
+          <p class="step-desc">A deterministic guardrail engine clamps any proposal before it reaches an actuator.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
 </div>
 
-<!-- BACKGROUND SCRIPT (Unmodified from user's original) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 (function () {
-"use strict";
+  "use strict";
 
-const CONFIG = {
-  bgColor: 0x05070a,
-  buildingColor: 0x11161d,
-  energyColor: new THREE.Color(0x00f0ff),
-  energyColorHex: 0x00f0ff,
+  const ZONE_COUNT = 12;
+  const grid = document.getElementById('zoneGrid');
+  const cells = [];
 
-  buildingWidth: 8,
-  buildingDepth: 8,
-  buildingHeight: 26,
-
-  windowCols: 6,
-  windowRows: 14,
-  windowActiveDensity: 0.08,   
-  windowFlickerSpeed: 0.35,    
-
-  dataLineCount: 6,
-  dataLineSpeedMin: 2.4,
-  dataLineSpeedMax: 5.2,
-
-  moteCount: 260,
-  moteFieldRadius: 34,
-  moteFieldHeight: 34,
-
-  pulseWaveInterval: 7.5,      
-  pulseWaveDuration: 2.6,
-  pulseWaveThickness: 3.2,
-
-  bloomThreshold: 0.35,
-  bloomStrength: 0.85,
-  bloomBlurIterations: 3,
-  bloomResolutionScale: 0.5,   
-
-  cameraBaseDistance: 62,
-  cameraBaseY: 15,
-  cameraLookY: 12,
-  cameraIdleOrbitSpeed: 0.035,
-  cameraNoiseInfluence: 2.2,
-  cameraMouseInfluence: 0.45
-};
-
-const Ease = {
-  linear: (t) => t,
-  inOutCubic: (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2),
-  inOutSine: (t) => -(Math.cos(Math.PI * t) - 1) / 2,
-  outElastic: (t) => {
-    const c4 = (2 * Math.PI) / 3;
-    return t === 0 ? 0 : t === 1 ? 1
-      : Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1;
-  },
-  smoothstep: (edge0, edge1, x) => {
-    const t = THREE.MathUtils.clamp((x - edge0) / (edge1 - edge0), 0, 1);
-    return t * t * (3 - 2 * t);
+  for (let i = 1; i <= ZONE_COUNT; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'zone-cell';
+    const id = document.createElement('span');
+    id.className = 'zone-id';
+    id.textContent = 'Z-' + String(i).padStart(2, '0');
+    const value = document.createElement('span');
+    value.className = 'zone-value';
+    value.textContent = (24 + Math.floor(Math.random() * 40)) + '%';
+    cell.appendChild(id);
+    cell.appendChild(value);
+    grid.appendChild(cell);
+    cells.push({ el: cell, valueEl: value });
   }
-};
 
-function hashSeed(x, y) {
-  const s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453123;
-  return s - Math.floor(s);
-}
+  const capValueEl = document.querySelector('.cap-value');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-function fbmNoise1D(x, octaves = 4, lacunarity = 2.01, gain = 0.5) {
-  let amplitude = 0.5;
-  let frequency = 1.0;
-  let sum = 0;
-  for (let i = 0; i < octaves; i++) {
-    sum += amplitude * Math.sin(x * frequency + i * 12.9898);
-    frequency *= lacunarity;
-    amplitude *= gain;
+  function randomLoad() { return 20 + Math.floor(Math.random() * 48); }
+  function randomCap() { return 290 + Math.floor(Math.random() * 70); }
+
+  function negotiateOnce() {
+    if (document.hidden) return;
+    const target = cells[Math.floor(Math.random() * cells.length)];
+    target.el.classList.add('is-negotiating');
+    target.valueEl.textContent = randomLoad() + '%';
+    setTimeout(() => target.el.classList.remove('is-negotiating'), 850);
   }
-  return sum;
-}
 
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(CONFIG.bgColor);
-scene.fog = new THREE.FogExp2(CONFIG.bgColor, 0.014);
-
-const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 500);
-const baseCamPos = new THREE.Vector3(0, CONFIG.cameraBaseY, CONFIG.cameraBaseDistance);
-camera.position.copy(baseCamPos);
-camera.lookAt(0, CONFIG.cameraLookY, 0);
-
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.outputEncoding = THREE.sRGBEncoding;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.05;
-renderer.autoClear = false;
-document.getElementById('bg-canvas-container').appendChild(renderer.domElement);
-
-const world = new THREE.Group();
-scene.add(world);
-
-scene.add(new THREE.AmbientLight(0xffffff, 0.35));
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-directionalLight.position.set(40, 80, 30);
-world.add(directionalLight);
-const cursorLight = new THREE.PointLight(CONFIG.energyColorHex, 3, 60, 2);
-cursorLight.position.set(0, 14, 15);
-world.add(cursorLight);
-
-const buildingGroup = new THREE.Group();
-world.add(buildingGroup);
-
-const towerGeometry = new THREE.BoxGeometry(CONFIG.buildingWidth, CONFIG.buildingHeight, CONFIG.buildingDepth);
-const towerMaterial = new THREE.MeshStandardMaterial({
-  color: CONFIG.buildingColor, roughness: 0.55, metalness: 0.35, flatShading: true
-});
-const tower = new THREE.Mesh(towerGeometry, towerMaterial);
-tower.position.y = CONFIG.buildingHeight / 2;
-buildingGroup.add(tower);
-
-const edgesGeo = new THREE.EdgesGeometry(towerGeometry);
-const edgeLines = new THREE.LineSegments(
-  edgesGeo,
-  new THREE.LineBasicMaterial({ color: CONFIG.energyColorHex, transparent: true, opacity: 0.2 })
-);
-edgeLines.position.copy(tower.position);
-buildingGroup.add(edgeLines);
-
-const windowBaseGeo = new THREE.PlaneGeometry(0.45, 0.7);
-const facades = [ { axis: 'z', sign: 1 }, { axis: 'z', sign: -1 }, { axis: 'x', sign: 1 }, { axis: 'x', sign: -1 } ];
-const totalWindows = facades.length * CONFIG.windowCols * CONFIG.windowRows;
-const instancedWindowGeo = new THREE.InstancedBufferGeometry();
-instancedWindowGeo.index = windowBaseGeo.index;
-instancedWindowGeo.attributes.position = windowBaseGeo.attributes.position;
-instancedWindowGeo.attributes.uv = windowBaseGeo.attributes.uv;
-
-const seedArray = new Float32Array(totalWindows);
-const rowArray = new Float32Array(totalWindows);
-const offsetMatrix = new Float32Array(totalWindows * 16);
-
-const colSpacing = CONFIG.buildingWidth / (CONFIG.windowCols + 1);
-const rowSpacing = CONFIG.buildingHeight / (CONFIG.windowRows + 1);
-
-let wi = 0;
-const dummyObj = new THREE.Object3D();
-facades.forEach((facade) => {
-  for (let r = 0; r < CONFIG.windowRows; r++) {
-    for (let c = 0; c < CONFIG.windowCols; c++) {
-      const along = -CONFIG.buildingWidth / 2 + colSpacing * (c + 1);
-      const y = rowSpacing * (r + 1);
-      if (facade.axis === 'z') {
-        dummyObj.position.set(along, y, (CONFIG.buildingDepth / 2 + 0.02) * facade.sign);
-        dummyObj.rotation.set(0, facade.sign < 0 ? Math.PI : 0, 0);
-      } else {
-        dummyObj.position.set((CONFIG.buildingWidth / 2 + 0.02) * facade.sign, y, along);
-        dummyObj.rotation.set(0, facade.sign > 0 ? Math.PI / 2 : -Math.PI / 2, 0);
-      }
-      dummyObj.updateMatrix();
-      dummyObj.matrix.toArray(offsetMatrix, wi * 16);
-      seedArray[wi] = hashSeed(c + facade.sign * 13.7, r + (facade.axis === 'z' ? 0 : 91.3));
-      rowArray[wi] = y / CONFIG.buildingHeight;
-      wi++;
-    }
+  function updateCap() {
+    if (document.hidden) return;
+    capValueEl.textContent = randomCap() + ' kW';
   }
-});
 
-const im0 = new Float32Array(totalWindows * 4);
-const im1 = new Float32Array(totalWindows * 4);
-const im2 = new Float32Array(totalWindows * 4);
-const im3 = new Float32Array(totalWindows * 4);
-for (let i = 0; i < totalWindows; i++) {
-  const base = i * 16;
-  im0.set(offsetMatrix.slice(base, base + 4), i * 4);
-  im1.set(offsetMatrix.slice(base + 4, base + 8), i * 4);
-  im2.set(offsetMatrix.slice(base + 8, base + 12), i * 4);
-  im3.set(offsetMatrix.slice(base + 12, base + 16), i * 4);
-}
-
-instancedWindowGeo.setAttribute('instMatrix0', new THREE.InstancedBufferAttribute(im0, 4));
-instancedWindowGeo.setAttribute('instMatrix1', new THREE.InstancedBufferAttribute(im1, 4));
-instancedWindowGeo.setAttribute('instMatrix2', new THREE.InstancedBufferAttribute(im2, 4));
-instancedWindowGeo.setAttribute('instMatrix3', new THREE.InstancedBufferAttribute(im3, 4));
-instancedWindowGeo.setAttribute('seed', new THREE.InstancedBufferAttribute(seedArray, 1));
-instancedWindowGeo.setAttribute('rowT', new THREE.InstancedBufferAttribute(rowArray, 1));
-instancedWindowGeo.instanceCount = totalWindows;
-
-const windowUniforms = {
-  uTime: { value: 0 },
-  uColor: { value: CONFIG.energyColor },
-  uDensity: { value: CONFIG.windowActiveDensity },
-  uFlickerSpeed: { value: CONFIG.windowFlickerSpeed },
-  uWaveY: { value: -1.0 },
-  uWaveThickness: { value: CONFIG.pulseWaveThickness / CONFIG.buildingHeight }
-};
-
-const windowVertexShader = `
-  attribute vec4 instMatrix0;
-  attribute vec4 instMatrix1;
-  attribute vec4 instMatrix2;
-  attribute vec4 instMatrix3;
-  attribute float seed;
-  attribute float rowT;
-  varying float vSeed;
-  varying float vRowT;
-  varying vec2 vUv;
-  void main() {
-    mat4 instanceMatrix = mat4(instMatrix0, instMatrix1, instMatrix2, instMatrix3);
-    vSeed = seed;
-    vRowT = rowT;
-    vUv = uv;
-    vec4 worldPos = instanceMatrix * vec4(position, 1.0);
-    gl_Position = projectionMatrix * modelViewMatrix * worldPos;
+  if (!reduceMotion) {
+    setInterval(negotiateOnce, 1600);
+    setInterval(updateCap, 4200);
   }
-`;
-const windowFragmentShader = `
-  precision mediump float;
-  uniform float uTime;
-  uniform vec3 uColor;
-  uniform float uDensity;
-  uniform float uFlickerSpeed;
-  uniform float uWaveY;
-  uniform float uWaveThickness;
-  varying float vSeed;
-  varying float vRowT;
-  varying vec2 vUv;
-  float flicker(float seed, float t) {
-    float a = sin(t * 1.0 + seed * 40.0);
-    float b = sin(t * 1.7 + seed * 71.0 + 1.3);
-    float c = sin(t * 0.6 + seed * 13.0 + 2.7);
-    return (a * 0.5 + b * 0.3 + c * 0.2) * 0.5 + 0.5;
-  }
-  void main() {
-    float f = flicker(vSeed, uTime * uFlickerSpeed);
-    float threshold = 1.0 - uDensity;
-    float lit = smoothstep(threshold, threshold + 0.08, f);
-    float waveDist = abs(vRowT - uWaveY);
-    float waveLit = 1.0 - smoothstep(0.0, uWaveThickness, waveDist);
-    lit = max(lit, waveLit);
-    if (lit < 0.02) discard;
-    vec2 centered = vUv - 0.5;
-    float vignette = 1.0 - smoothstep(0.25, 0.5, length(centered));
-    gl_FragColor = vec4(uColor, lit * vignette * 0.9);
-  }
-`;
-const windowMaterial = new THREE.ShaderMaterial({
-  uniforms: windowUniforms, vertexShader: windowVertexShader, fragmentShader: windowFragmentShader,
-  transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide
-});
-const windowInstancedMesh = new THREE.Mesh(instancedWindowGeo, windowMaterial);
-windowInstancedMesh.frustumCulled = false;
-buildingGroup.add(windowInstancedMesh);
-
-function createStreakTexture() {
-  const canvas = document.createElement('canvas');
-  canvas.width = 16; canvas.height = 128;
-  const ctx = canvas.getContext('2d');
-  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  gradient.addColorStop(0.0, 'rgba(255,255,255,0)');
-  gradient.addColorStop(0.65, 'rgba(255,255,255,0.2)');
-  gradient.addColorStop(1.0, 'rgba(255,255,255,1)');
-  ctx.fillStyle = gradient; ctx.fillRect(0, 0, 16, 128);
-  return new THREE.CanvasTexture(canvas);
-}
-const streakTexture = createStreakTexture();
-const dataLines = [];
-for (let i = 0; i < CONFIG.dataLineCount; i++) {
-  const side = Math.random() > 0.5 ? 1 : -1;
-  const x = (Math.random() - 0.5) * CONFIG.buildingWidth * 0.85;
-  const z = (CONFIG.buildingDepth / 2 + 0.05) * side;
-  const streakGeo = new THREE.PlaneGeometry(0.12, 3.5);
-  const streakMat = new THREE.MeshBasicMaterial({
-    map: streakTexture, color: CONFIG.energyColorHex, transparent: true,
-    opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false
-  });
-  const streak = new THREE.Mesh(streakGeo, streakMat);
-  streak.position.set(x, 0, z);
-  buildingGroup.add(streak);
-  dataLines.push({
-    mesh: streak, y: Math.random() * CONFIG.buildingHeight,
-    baseSpeed: THREE.MathUtils.randFloat(CONFIG.dataLineSpeedMin, CONFIG.dataLineSpeedMax),
-    dir: Math.random() > 0.5 ? 1 : -1, noiseOffset: Math.random() * 100
-  });
-}
-
-const moteGeo = new THREE.BufferGeometry();
-const motePos = new Float32Array(CONFIG.moteCount * 3);
-const moteSeed = new Float32Array(CONFIG.moteCount);
-for (let i = 0; i < CONFIG.moteCount; i++) {
-  const angle = Math.random() * Math.PI * 2;
-  const radius = 6 + Math.random() * CONFIG.moteFieldRadius;
-  motePos[i * 3 + 0] = Math.cos(angle) * radius;
-  motePos[i * 3 + 1] = Math.random() * CONFIG.moteFieldHeight;
-  motePos[i * 3 + 2] = Math.sin(angle) * radius;
-  moteSeed[i] = Math.random() * 1000;
-}
-moteGeo.setAttribute('position', new THREE.BufferAttribute(motePos, 3));
-moteGeo.setAttribute('seed', new THREE.BufferAttribute(moteSeed, 1));
-const moteUniforms = { uTime: { value: 0 }, uColor: { value: CONFIG.energyColor } };
-const moteMaterial = new THREE.ShaderMaterial({
-  uniforms: moteUniforms, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
-  vertexShader: `
-    attribute float seed; uniform float uTime; varying float vAlpha;
-    void main() {
-      vec3 p = position;
-      p.x += sin(uTime * 0.15 + seed) * 1.5; p.z += cos(uTime * 0.12 + seed * 1.3) * 1.5; p.y += sin(uTime * 0.2 + seed * 2.1) * 0.8;
-      vAlpha = 0.4 + 0.6 * (sin(uTime * 0.6 + seed) * 0.5 + 0.5);
-      vec4 mv = modelViewMatrix * vec4(p, 1.0); gl_PointSize = (60.0 / -mv.z); gl_Position = projectionMatrix * mv;
-    }
-  `,
-  fragmentShader: `
-    precision mediump float; uniform vec3 uColor; varying float vAlpha;
-    void main() {
-      vec2 c = gl_PointCoord - 0.5; float d = length(c); if (d > 0.5) discard;
-      float falloff = 1.0 - smoothstep(0.0, 0.5, d); gl_FragColor = vec4(uColor, falloff * vAlpha * 0.55);
-    }
-  `
-});
-const moteField = new THREE.Points(moteGeo, moteMaterial);
-world.add(moteField);
-
-const gridHelper = new THREE.GridHelper(140, 70, CONFIG.buildingColor, CONFIG.buildingColor);
-gridHelper.material.transparent = true; gridHelper.material.opacity = 0.15;
-world.add(gridHelper);
-
-const orthoCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-const fullscreenTriGeo = new THREE.PlaneGeometry(2, 2);
-function makeRenderTarget(scale) {
-  return new THREE.WebGLRenderTarget(Math.max(1, Math.floor(window.innerWidth * scale)), Math.max(1, Math.floor(window.innerHeight * scale)), {
-    minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBAFormat
-  });
-}
-let sceneRT = makeRenderTarget(1.0);
-let brightRT = makeRenderTarget(CONFIG.bloomResolutionScale);
-let blurRTA = makeRenderTarget(CONFIG.bloomResolutionScale);
-let blurRTB = makeRenderTarget(CONFIG.bloomResolutionScale);
-
-const brightPassMaterial = new THREE.ShaderMaterial({
-  uniforms: { tDiffuse: { value: null }, uThreshold: { value: CONFIG.bloomThreshold } },
-  vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`,
-  fragmentShader: `
-    precision mediump float; uniform sampler2D tDiffuse; uniform float uThreshold; varying vec2 vUv;
-    void main() {
-      vec4 texel = texture2D(tDiffuse, vUv); float brightness = dot(texel.rgb, vec3(0.2126, 0.7152, 0.0722));
-      float contribution = smoothstep(uThreshold, uThreshold + 0.2, brightness); gl_FragColor = vec4(texel.rgb * contribution, 1.0);
-    }
-  `
-});
-
-function makeBlurMaterial(direction) {
-  return new THREE.ShaderMaterial({
-    uniforms: { tDiffuse: { value: null }, uResolution: { value: new THREE.Vector2(1, 1) }, uDirection: { value: direction } },
-    vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`,
-    fragmentShader: `
-      precision mediump float; uniform sampler2D tDiffuse; uniform vec2 uResolution; uniform vec2 uDirection; varying vec2 vUv;
-      void main() {
-        vec2 texel = uDirection / uResolution; vec4 sum = vec4(0.0);
-        sum += texture2D(tDiffuse, vUv - texel * 4.0) * 0.0162162162; sum += texture2D(tDiffuse, vUv - texel * 3.0) * 0.0540540541;
-        sum += texture2D(tDiffuse, vUv - texel * 2.0) * 0.1216216216; sum += texture2D(tDiffuse, vUv - texel * 1.0) * 0.1945945946;
-        sum += texture2D(tDiffuse, vUv)                * 0.2270270270;
-        sum += texture2D(tDiffuse, vUv + texel * 1.0) * 0.1945945946; sum += texture2D(tDiffuse, vUv + texel * 2.0) * 0.1216216216;
-        sum += texture2D(tDiffuse, vUv + texel * 3.0) * 0.0540540541; sum += texture2D(tDiffuse, vUv + texel * 4.0) * 0.0162162162;
-        gl_FragColor = sum;
-      }
-    `
-  });
-}
-const blurMaterialH = makeBlurMaterial(new THREE.Vector2(1, 0));
-const blurMaterialV = makeBlurMaterial(new THREE.Vector2(0, 1));
-
-const compositeMaterial = new THREE.ShaderMaterial({
-  uniforms: { tScene: { value: null }, tBloom: { value: null }, uStrength: { value: CONFIG.bloomStrength } },
-  vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`,
-  fragmentShader: `
-    precision mediump float; uniform sampler2D tScene; uniform sampler2D tBloom; uniform float uStrength; varying vec2 vUv;
-    void main() { vec4 base = texture2D(tScene, vUv); vec4 bloom = texture2D(tBloom, vUv); gl_FragColor = vec4(base.rgb + bloom.rgb * uStrength, 1.0); }
-  `, transparent: true
-});
-const fsQuad = new THREE.Mesh(fullscreenTriGeo, brightPassMaterial);
-const fsScene = new THREE.Scene(); fsScene.add(fsQuad);
-function renderFullscreen(material, target) { fsQuad.material = material; renderer.setRenderTarget(target); renderer.clear(); renderer.render(fsScene, orthoCam); }
-
-function runBloomPipeline() {
-  renderer.setRenderTarget(sceneRT); renderer.clear(); renderer.render(scene, camera);
-  brightPassMaterial.uniforms.tDiffuse.value = sceneRT.texture; renderFullscreen(brightPassMaterial, brightRT);
-  let readRT = brightRT; let writeRT = blurRTA;
-  for (let i = 0; i < CONFIG.bloomBlurIterations; i++) {
-    blurMaterialH.uniforms.tDiffuse.value = readRT.texture; blurMaterialH.uniforms.uResolution.value.set(readRT.width, readRT.height); renderFullscreen(blurMaterialH, writeRT);
-    blurMaterialV.uniforms.tDiffuse.value = writeRT.texture; blurMaterialV.uniforms.uResolution.value.set(writeRT.width, writeRT.height); renderFullscreen(blurMaterialV, blurRTB);
-    readRT = blurRTB; writeRT = (writeRT === blurRTA) ? blurRTB : blurRTA;
-  }
-  compositeMaterial.uniforms.tScene.value = sceneRT.texture; compositeMaterial.uniforms.tBloom.value = readRT.texture; fsQuad.material = compositeMaterial;
-  renderer.setRenderTarget(null); renderer.clear(); renderer.render(fsScene, orthoCam);
-}
-
-const mouse = new THREE.Vector2(0, 0); const mouseSmoothed = new THREE.Vector2(0, 0);
-const raycaster = new THREE.Raycaster(); const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-const lightTarget = new THREE.Vector3(0, 14, 15); const rayHit = new THREE.Vector3();
-const cursorGlowEl = document.getElementById('cursor-glow');
-
-function updatePointer(clientX, clientY) {
-  mouse.x = (clientX / window.innerWidth) * 2 - 1; mouse.y = -(clientY / window.innerHeight) * 2 + 1;
-  cursorGlowEl.style.transform = `translate(${clientX}px, ${clientY}px)`; cursorGlowEl.style.opacity = '1';
-}
-window.addEventListener('mousemove', (e) => updatePointer(e.clientX, e.clientY));
-window.addEventListener('mouseleave', () => { cursorGlowEl.style.opacity = '0'; });
-window.addEventListener('touchmove', (e) => { if (e.touches[0]) updatePointer(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
-
-let nextPulseAt = 3.0; let pulseActiveUntil = -1; let pulseStartTime = 0;
-let resizeTimeout = null;
-function handleResize() {
-  camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight);
-  sceneRT.dispose(); brightRT.dispose(); blurRTA.dispose(); blurRTB.dispose();
-  sceneRT = makeRenderTarget(1.0); brightRT = makeRenderTarget(CONFIG.bloomResolutionScale); blurRTA = makeRenderTarget(CONFIG.bloomResolutionScale); blurRTB = makeRenderTarget(CONFIG.bloomResolutionScale);
-}
-window.addEventListener('resize', () => { clearTimeout(resizeTimeout); resizeTimeout = setTimeout(handleResize, 120); });
-let isTabVisible = true; document.addEventListener('visibilitychange', () => { isTabVisible = document.visibilityState === 'visible'; });
-const clock = new THREE.Clock();
-
-function animate() {
-  requestAnimationFrame(animate);
-  if (!isTabVisible) { clock.getDelta(); return; }
-  const delta = Math.min(clock.getDelta(), 0.05); const elapsed = clock.getElapsedTime();
-  mouseSmoothed.x += (mouse.x - mouseSmoothed.x) * 0.08; mouseSmoothed.y += (mouse.y - mouseSmoothed.y) * 0.08;
-  windowUniforms.uTime.value = elapsed;
-
-  if (elapsed > nextPulseAt && pulseActiveUntil < elapsed) {
-    pulseActiveUntil = elapsed + CONFIG.pulseWaveDuration; pulseStartTime = elapsed;
-    nextPulseAt = elapsed + CONFIG.pulseWaveInterval + fbmNoise1D(elapsed) * 1.5;
-  }
-  if (elapsed < pulseActiveUntil) {
-    const t = (elapsed - pulseStartTime) / CONFIG.pulseWaveDuration;
-    windowUniforms.uWaveY.value = Ease.inOutCubic(THREE.MathUtils.clamp(t, 0, 1));
-  } else { windowUniforms.uWaveY.value = -1.0; }
-
-  dataLines.forEach((line) => {
-    const speedMod = 1 + fbmNoise1D(elapsed * 0.3 + line.noiseOffset) * 0.4; line.y += line.baseSpeed * speedMod * line.dir * delta;
-    if (line.y > CONFIG.buildingHeight + 2) line.y = -2; if (line.y < -2) line.y = CONFIG.buildingHeight + 2;
-    line.mesh.position.y = line.y; const edgeFade = Math.min(line.y / 3, (CONFIG.buildingHeight - line.y) / 3, 1);
-    line.mesh.material.opacity = Math.max(0, edgeFade) * 0.8;
-  });
-  moteUniforms.uTime.value = elapsed;
-  raycaster.setFromCamera(mouseSmoothed, camera);
-  if (raycaster.ray.intersectPlane(groundPlane, rayHit)) { lightTarget.set(rayHit.x * 0.5, 14, rayHit.z * 0.5 + 15); }
-  cursorLight.position.lerp(lightTarget, 0.06); cursorLight.intensity = 2.6 + fbmNoise1D(elapsed * 0.8) * 0.6;
-
-  const idleAngle = elapsed * CONFIG.cameraIdleOrbitSpeed;
-  const noiseDrift = fbmNoise1D(elapsed * 0.07) * CONFIG.cameraNoiseInfluence * 0.02;
-  const targetAngle = idleAngle + noiseDrift + mouseSmoothed.x * CONFIG.cameraMouseInfluence;
-  const radius = CONFIG.cameraBaseDistance + fbmNoise1D(elapsed * 0.05 + 50) * 2.5;
-
-  camera.position.x += (Math.sin(targetAngle) * radius - camera.position.x) * 0.03;
-  camera.position.z += (Math.cos(targetAngle) * radius - camera.position.z) * 0.03;
-  const targetY = CONFIG.cameraBaseY - mouseSmoothed.y * 3 + fbmNoise1D(elapsed * 0.09 + 20) * 1.2;
-  camera.position.y += (targetY - camera.position.y) * 0.03;
-  camera.lookAt(0, CONFIG.cameraLookY, 0);
-
-  runBloomPipeline();
-}
-
-const veil = document.getElementById('loading-veil');
-requestAnimationFrame(() => { setTimeout(() => { veil.style.opacity = '0'; setTimeout(() => veil.remove(), 1000); }, 400); });
-animate();
-
 })();
 </script>
 </body>

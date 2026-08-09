@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Eco-Loop — Cognitive Building Intelligence</title>
     <meta name="description" content="Multi-agent HVAC control powered by autonomous LLM coordination">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
 
     <style>
@@ -13,35 +13,37 @@
          DESIGN SYSTEM — TOKENS
       ───────────────────────────────────────────────── */
       :root {
-        --bg-page:      #080A0F;
-        --bg-raised:    #11161D;
-        --bg-elevated:  #151B24;
-        --bg-overlay:   #1A212B;
-        --bg-mono:      #0B0E14;
+        --bg-page:      #121820;
+        --bg-raised:    #1a222b;
+        --bg-elevated:  #202934;
+        --bg-overlay:   #25303c;
+        --bg-mono:      #0e131a;
 
-        --border-subtle:  #1C2430;
-        --border-default: #253040;
-        --border-strong:  #324056;
-        --border-active:  #475975;
+        --border-subtle:  #313d47;
+        --border-default: #3b4955;
+        --border-strong:  #495b6a;
+        --border-active:  #5fa8a0;
 
-        --text-primary:   #F8FAF0;
-        --text-secondary: #94A3B8;
-        --text-muted:     #64748B;
+        --text-primary:   #edf1ef;
+        --text-secondary: #8fa0aa;
+        --text-muted:     #5f707a;
 
-        --accent:         #00f0ff;
-        --accent-dim:     rgba(0, 240, 255, 0.2);
+        --accent:         #e8a33d;
+        --accent-dim:     #b9832f;
+        --accent-ink:     #17130a;
+        --flow:           #5fa8a0;
 
-        --success:  #7A9E7A;
-        --warning:  #00f0ff;
-        --error:    #A06060;
-        --running:  #00f0ff;
+        --success:  #5fa8a0;
+        --warning:  #e8a33d;
+        --error:    #c45b5b;
+        --running:  #e8a33d;
 
-        --font: 'Inter', system-ui, -apple-system, sans-serif;
-        --mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+        --font: 'IBM Plex Sans', -apple-system, sans-serif;
+        --mono: 'IBM Plex Mono', 'Courier New', monospace;
 
         --radius-sm: 4px;
-        --radius:    8px;
-        --radius-lg: 12px;
+        --radius:    4px;
+        --radius-lg: 8px;
       }
 
       *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
@@ -178,17 +180,17 @@
         background: var(--border-subtle); flex-shrink: 0;
         transition: background 0.5s ease;
       }
-      .wf-connector.lit { background: var(--accent); box-shadow: 0 0 8px var(--accent-dim); }
+      .wf-connector.lit { background: var(--flow); }
 
       .wf-stage { display: flex; justify-content: center; gap: 1.5rem; width: 100%; border: 1px solid transparent; border-radius: var(--radius); padding: 0.5rem; transition: all 0.3s ease; }
-      .wf-stage.s-active-layer { border-color: var(--accent-dim); background: var(--bg-elevated); box-shadow: 0 0 15px rgba(0, 240, 255, 0.05); }
+      .wf-stage.s-active-layer { border-color: var(--border-active); background: var(--bg-elevated); }
 
       .wf-parallel-block {
         width: 100%; display: flex; flex-direction: column; align-items: center;
         border: 1px solid var(--border-subtle); border-radius: var(--radius); overflow: hidden;
         transition: all 0.3s ease;
       }
-      .wf-parallel-block.s-active-layer { border-color: var(--accent-dim); background: var(--bg-elevated); box-shadow: 0 0 15px rgba(0, 240, 255, 0.05); }
+      .wf-parallel-block.s-active-layer { border-color: var(--border-active); background: var(--bg-elevated); }
       
       .wf-parallel-label {
         font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted);
@@ -222,7 +224,7 @@
       .node-duration { font-family: var(--mono); font-size: 0.7rem; color: var(--text-muted); }
 
       /* Status states */
-      .agent-node.s-running { border-color: var(--running); background: rgba(0, 240, 255, 0.05); box-shadow: 0 0 12px rgba(0, 240, 255, 0.1); }
+      .agent-node.s-running { border-color: var(--running); background: rgba(232,163,61,0.05); }
       .agent-node.s-running .status-dot { background: var(--running); }
       .agent-node.s-running .node-status-badge { color: var(--running); }
 
