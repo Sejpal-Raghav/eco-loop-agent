@@ -42,13 +42,12 @@ new_html = """    <style>
         background: var(--bg-raised);
         border: 1px solid var(--line);
         border-radius: 6px;
-        display: flex;
-        justify-content: center;
         overflow-x: auto;
+        text-align: center;
       }
-      .blog-article .mermaid-wrapper svg {
-        max-width: 100% !important;
-        height: auto !important;
+      .blog-article .mermaid {
+        display: inline-block;
+        min-width: min-content;
       }
     </style>
     
