@@ -1,5 +1,11 @@
 import re
 
+with open('dashboard/index.html', 'r', encoding='utf-8') as f:
+    html = f.read()
+
+header_part = re.search(r'(.*?<main>)', html, re.DOTALL).group(1)
+footer_part = re.search(r'(</main>.*)', html, re.DOTALL).group(1)
+
 new_html = """    <style>
       .blog-article {
         max-width: 920px;
@@ -48,6 +54,15 @@ new_html = """    <style>
       .blog-article .mermaid svg {
         max-width: 100% !important;
         height: auto !important;
+      }
+      /* Specific override for wide diagrams so they don't render tiny */
+      .blog-article .wide-diagram .mermaid {
+        width: 100%;
+        min-width: 700px;
+      }
+      .blog-article .wide-diagram .mermaid svg {
+        width: 100% !important;
+        max-width: none !important;
       }
     </style>
     
@@ -170,7 +185,7 @@ sequenceDiagram
       
       <p>No matter how advanced the reasoning, we cannot trust generative AI with raw control over heavy physical machinery. Probabilistic models will eventually hallucinate, and in a physical building, hallucination means frozen pipes or roasted occupants.</p>
       
-      <div class="mermaid-wrapper">
+      <div class="mermaid-wrapper wide-diagram">
         <div class="mermaid">
 flowchart LR
     A[Coordinator Decisions] --> B{Comfort Auditor}
@@ -191,13 +206,12 @@ flowchart LR
       <h2>Conclusion</h2>
       
       <p>By pairing physics-based energy simulation with a highly orchestrated, multi-agent LLM framework, Eco-Loop achieves a true paradigm shift. It proves that by replacing rigid schedules with closed-loop cognitive reasoning, we can drastically reduce net energy consumption while maintaining strict thermal comfort constraints. Decentralization, macro-awareness, active negotiation, and deterministic safety are the keys to autonomous structures.</p>
-    </article>"""
-
-with open('dashboard/blog.html', 'r', encoding='utf-8') as f:
-    html = f.read()
-
-# Replace the article content
-html = re.sub(r'<article class="blog-article">.*?</article>', new_html, html, flags=re.DOTALL)
+    </article>
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true, theme: 'dark', themeVariables: { fontFamily: 'IBM Plex Sans' } });
+    </script>
+"""
 
 with open('dashboard/blog.html', 'w', encoding='utf-8') as f:
-    f.write(html)
+    f.write(header_part + new_html + footer_part)

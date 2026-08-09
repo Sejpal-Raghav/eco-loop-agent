@@ -412,54 +412,7 @@
     </div>
   </header>
 
-  <main>
-    <style>
-      .blog-article {
-        max-width: 680px;
-        margin: 0 auto;
-        padding: 4rem 0 6rem;
-      }
-      .blog-article h1 {
-        font-size: clamp(2rem, 3.5vw, 2.8rem);
-        line-height: 1.15;
-        letter-spacing: -0.02em;
-        margin-bottom: 2.5rem;
-      }
-      .blog-article h2 {
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin: 3.5rem 0 1.5rem;
-        letter-spacing: -0.01em;
-        color: var(--text);
-      }
-      .blog-article h3 {
-        font-size: 1.15rem;
-        font-weight: 600;
-        margin: 2.5rem 0 1rem;
-        color: var(--text);
-      }
-      .blog-article p {
-        font-size: 1.05rem;
-        line-height: 1.75;
-        color: var(--text-muted);
-        margin-bottom: 1.5rem;
-      }
-      .blog-article strong {
-        color: var(--text);
-        font-weight: 600;
-      }
-      .blog-article .mermaid-wrapper {
-        margin: 3rem 0;
-        padding: 1.5rem;
-        background: var(--bg-raised);
-        border: 1px solid var(--line);
-        border-radius: 4px;
-        display: flex;
-        justify-content: center;
-      }
-    </style>
-    
-                <style>
+  <main>    <style>
       .blog-article {
         max-width: 920px;
         margin: 0 auto;
@@ -501,171 +454,21 @@
         background: var(--bg-raised);
         border: 1px solid var(--line);
         border-radius: 6px;
-        display: flex;
-        justify-content: center;
         overflow-x: auto;
+        text-align: center;
       }
-      .blog-article .mermaid-wrapper svg {
+      .blog-article .mermaid svg {
         max-width: 100% !important;
         height: auto !important;
       }
-    </style>
-    
-        <style>
-      .blog-article {
-        max-width: 920px;
-        margin: 0 auto;
-        padding: 4rem 0 6rem;
-      }
-      .blog-article h1 {
-        font-size: clamp(2rem, 3.5vw, 2.8rem);
-        line-height: 1.15;
-        letter-spacing: -0.02em;
-        margin-bottom: 2.5rem;
-      }
-      .blog-article h2 {
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin: 3.5rem 0 1.5rem;
-        letter-spacing: -0.01em;
-        color: var(--text);
-      }
-      .blog-article h3 {
-        font-size: 1.15rem;
-        font-weight: 600;
-        margin: 2.5rem 0 1rem;
-        color: var(--text);
-      }
-      .blog-article p {
-        font-size: 1.05rem;
-        line-height: 1.75;
-        color: var(--text-muted);
-        margin-bottom: 1.5rem;
-        max-width: 80ch;
-      }
-      .blog-article strong {
-        color: var(--text);
-        font-weight: 600;
-      }
-      .blog-article .mermaid-wrapper {
-        margin: 3.5rem 0;
-        padding: 2.5rem 1.5rem;
-        background: var(--bg-raised);
-        border: 1px solid var(--line);
-        border-radius: 6px;
-        overflow-x: auto;
-        text-align: center;
-      }
-      .blog-article .mermaid {
-        display: inline-block;
-        min-width: min-content;
-      }
-    </style>
-    
-        <style>
-      .blog-article {
-        max-width: 920px;
-        margin: 0 auto;
-        padding: 4rem 0 6rem;
-      }
-      .blog-article h1 {
-        font-size: clamp(2rem, 3.5vw, 2.8rem);
-        line-height: 1.15;
-        letter-spacing: -0.02em;
-        margin-bottom: 2.5rem;
-      }
-      .blog-article h2 {
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin: 3.5rem 0 1.5rem;
-        letter-spacing: -0.01em;
-        color: var(--text);
-      }
-      .blog-article h3 {
-        font-size: 1.15rem;
-        font-weight: 600;
-        margin: 2.5rem 0 1rem;
-        color: var(--text);
-      }
-      .blog-article p {
-        font-size: 1.05rem;
-        line-height: 1.75;
-        color: var(--text-muted);
-        margin-bottom: 1.5rem;
-        max-width: 80ch;
-      }
-      .blog-article strong {
-        color: var(--text);
-        font-weight: 600;
-      }
-      .blog-article .mermaid-wrapper {
-        margin: 3.5rem 0;
-        padding: 2.5rem 1.5rem;
-        background: var(--bg-raised);
-        border: 1px solid var(--line);
-        border-radius: 6px;
-        overflow-x: auto;
-        text-align: center;
-      }
-      .blog-article .mermaid {
+      /* Specific override for wide diagrams so they don't render tiny */
+      .blog-article .wide-diagram .mermaid {
         width: 100%;
         min-width: 700px;
       }
-      .blog-article .mermaid svg {
+      .blog-article .wide-diagram .mermaid svg {
         width: 100% !important;
-        height: auto !important;
         max-width: none !important;
-      }
-    </style>
-    
-        <style>
-      .blog-article {
-        max-width: 920px;
-        margin: 0 auto;
-        padding: 4rem 0 6rem;
-      }
-      .blog-article h1 {
-        font-size: clamp(2rem, 3.5vw, 2.8rem);
-        line-height: 1.15;
-        letter-spacing: -0.02em;
-        margin-bottom: 2.5rem;
-      }
-      .blog-article h2 {
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin: 3.5rem 0 1.5rem;
-        letter-spacing: -0.01em;
-        color: var(--text);
-      }
-      .blog-article h3 {
-        font-size: 1.15rem;
-        font-weight: 600;
-        margin: 2.5rem 0 1rem;
-        color: var(--text);
-      }
-      .blog-article p {
-        font-size: 1.05rem;
-        line-height: 1.75;
-        color: var(--text-muted);
-        margin-bottom: 1.5rem;
-        max-width: 80ch;
-      }
-      .blog-article strong {
-        color: var(--text);
-        font-weight: 600;
-      }
-      .blog-article .mermaid-wrapper {
-        margin: 3.5rem 0;
-        padding: 2.5rem 1.5rem;
-        background: var(--bg-raised);
-        border: 1px solid var(--line);
-        border-radius: 6px;
-        overflow-x: auto;
-        text-align: center;
-      }
-      .blog-article .mermaid svg {
-        max-width: 100% !important;
-        height: auto !important;
       }
     </style>
     
@@ -788,7 +591,7 @@ sequenceDiagram
       
       <p>No matter how advanced the reasoning, we cannot trust generative AI with raw control over heavy physical machinery. Probabilistic models will eventually hallucinate, and in a physical building, hallucination means frozen pipes or roasted occupants.</p>
       
-      <div class="mermaid-wrapper">
+      <div class="mermaid-wrapper wide-diagram">
         <div class="mermaid">
 flowchart LR
     A[Coordinator Decisions] --> B{Comfort Auditor}
