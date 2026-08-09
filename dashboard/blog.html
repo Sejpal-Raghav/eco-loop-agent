@@ -448,27 +448,36 @@
         color: var(--text);
         font-weight: 600;
       }
+
       .blog-article .mermaid-wrapper {
-        margin: 3.5rem 0;
-        padding: 2.5rem 1.5rem;
+        margin: 3rem 0;
+        padding: 1.5rem;
         background: var(--bg-raised);
         border: 1px solid var(--line);
         border-radius: 6px;
         overflow-x: auto;
-        text-align: center;
       }
+      .blog-article .mermaid {
+        display: flex;
+        justify-content: center;
+      }
+      /* Capped instead of stretched to the full 920px column - this is the
+         actual size fix. useMaxWidth in mermaid.initialize only stops it
+         from overflowing; it doesn't stop it from filling all available
+         space, so the cap has to happen here. */
       .blog-article .mermaid svg {
-        max-width: 100% !important;
-        height: auto !important;
-      }
-      /* Specific override for wide diagrams so they don't render tiny */
-      .blog-article .wide-diagram .mermaid {
-        width: 100%;
-        min-width: 700px;
-      }
-      .blog-article .wide-diagram .mermaid svg {
+        max-width: 560px !important;
         width: 100% !important;
-        max-width: none !important;
+        height: auto !important;
+        margin: 0 auto;
+      }
+      .blog-article .diagram-caption {
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        color: var(--text-dim, var(--text-muted));
+        text-align: center;
+        margin-top: 0.75rem;
+        letter-spacing: 0.02em;
       }
     </style>
     
@@ -498,15 +507,16 @@
       
       <div class="mermaid-wrapper">
         <div class="mermaid">
-graph LR
-    subgraph The Monolithic Bottleneck
-        Data[Massive Raw Data Stream] -->|Context Window Choke| Model[Single Monolithic LLM]
-        Model -->|High Latency| Action1[Zone 1 Setpoint]
-        Model -->|Hallucination| Action2[Zone 2 Setpoint]
-        Model -->|Missed Constraints| Action3[Facility Cap]
-    end
-    style Model fill:#8b3a3a,stroke:#e8a33d,stroke-width:2px;
+graph TD
+    Data[Raw Building Data Stream] -->|entire state, every 30 min| Model[Single Monolithic LLM]
+    Model -->|high latency| Z1[Zone 1 Setpoint]
+    Model -->|hallucinated value| Z2[Zone 2 Setpoint]
+    Model -->|constraint ignored| Cap[Facility Demand Cap]
+
+    classDef danger fill:#2c1712,stroke:#c1440e,stroke-width:1.5px,color:#f4b8a0;
+    class Model danger
         </div>
+        <div class="diagram-caption">One model, one prompt, three ways to fail at once</div>
       </div>
       
       <p>When asked to balance a localized temperature drop in a perimeter zone against a facility-wide peak demand cap, the model would lose the plot. It hallucinated set-points. It ignored physical constraints. Latency spiked to unusable levels because the model was attempting to act as a localized sensor, a long-term planner, and a strict safety gatekeeper simultaneously. We realized that forcing a probabilistic model into a monolithic architecture was a fundamental dead end.</p>
@@ -520,26 +530,27 @@ graph LR
       <div class="mermaid-wrapper">
         <div class="mermaid">
 graph TD
-    subgraph Perception Layer
+    subgraph Perception
         SC[State Compressor]
         AD[Anomaly Detector]
     end
-    subgraph Memory Layer
+    subgraph Memory
         OM[Outcome Memory]
     end
-    subgraph Planning Layer
+    subgraph Planning
         FP[Forecast Planner]
     end
-    subgraph Reasoning Layer
+    subgraph Reasoning
         ZA1[Zone Agent 1]
         ZA2[Zone Agent 2]
         ZA3[Zone Agent 3]
         CO[Coordinator]
     end
-    subgraph Safety Layer
+    subgraph Safety
         CA[Comfort Auditor]
         GE[Guardrail Engine]
     end
+
     SC --> OM
     AD --> OM
     OM --> FP
@@ -551,7 +562,13 @@ graph TD
     ZA3 --> CO
     CO --> CA
     CA --> GE
+
+    classDef planning fill:#2a2013,stroke:#e8a33d,stroke-width:1.5px,color:#f0cd8a;
+    classDef safety fill:#142523,stroke:#5fa8a0,stroke-width:1.5px,color:#bfe3df;
+    class FP,CO planning
+    class CA,GE safety
         </div>
+        <div class="diagram-caption">Amber = strategy and arbitration · teal = deterministic safety checks</div>
       </div>
       
       <h2>Technical Decision 3: Data Sanitization (The Perception Layer)</h2>
@@ -570,11 +587,13 @@ sequenceDiagram
     participant Weather as External Data
     participant FP as Forecast Planner
     participant ZA as Zone Agents
-    Weather->>FP: 24h Weather & Grid Carbon
-    FP->>FP: Establish Peak Demand Threshold
-    FP->>ZA: Pass Global Strategy Cap
-    ZA->>ZA: Calculate Local ECMs
+    Note over FP: wakes every 6 hours
+    Weather->>FP: 24h weather + grid carbon intensity
+    FP->>FP: calculate peak demand threshold
+    FP->>ZA: broadcast demand cap
+    ZA->>ZA: calculate local setpoints
         </div>
+        <div class="diagram-caption">Planning runs on a 6-hour cycle; zone agents act every 30 minutes</div>
       </div>
       
       <p>The <strong>Planning Layer</strong> (the Forecast Planner) does not run every cycle. Instead, it wakes up every six hours. It ingests 24-hour weather projections and real-time local carbon grid intensity. It calculates a peak demand threshold for the entire facility. By isolating this task, we can utilize a larger, slower model to generate complex strategies without slowing down the rapid 30-minute tactical control loops executed by the Zone Agents.</p>
@@ -591,19 +610,25 @@ sequenceDiagram
       
       <p>No matter how advanced the reasoning, we cannot trust generative AI with raw control over heavy physical machinery. Probabilistic models will eventually hallucinate, and in a physical building, hallucination means frozen pipes or roasted occupants.</p>
       
-      <div class="mermaid-wrapper wide-diagram">
+      <div class="mermaid-wrapper">
         <div class="mermaid">
-flowchart LR
-    A[Coordinator Decisions] --> B{Comfort Auditor}
-    B -- PMV Exceeds ±0.5 --> C[Emergency Veto: Override Setpoint]
-    B -- PMV Safe --> D{Guardrail Engine}
-    D -- Delta > 3°C --> E[Clamp Rate Limit]
-    D -- Within Bounds --> F[Forward Injection to EnergyPlus]
+graph TD
+    A[Coordinator Decision] --> B{Comfort Auditor}
+    B -->|PMV exceeds +/-0.5| C[Emergency Veto]
+    B -->|PMV within bounds| D{Guardrail Engine}
+    D -->|delta over 3C| E[Clamp to Rate Limit]
+    D -->|within bounds| F[Forward to EnergyPlus]
     C --> F
     E --> F
-    style B fill:#313d47,stroke:#5fa8a0,stroke-width:2px;
-    style D fill:#313d47,stroke:#5fa8a0,stroke-width:2px;
+
+    classDef planning fill:#2a2013,stroke:#e8a33d,stroke-width:1.5px,color:#f0cd8a;
+    classDef safety fill:#142523,stroke:#5fa8a0,stroke-width:1.5px,color:#bfe3df;
+    classDef danger fill:#2c1712,stroke:#c1440e,stroke-width:1.5px,color:#f4b8a0;
+    class B,D,F safety
+    class C danger
+    class E planning
         </div>
+        <div class="diagram-caption">Same Comfort Auditor and Guardrail Engine as the stack above — same colors, same nodes</div>
       </div>
       
       <p>Before computed set-points are injected back into the active EnergyPlus instance, they pass through a strictly deterministic <strong>Safety Layer</strong>. The <strong>Comfort Auditor</strong> verifies that no LLM decision violates the established Predicted Mean Vote (PMV) thermal comfort boundaries. Finally, a hardcoded <strong>Guardrail Engine</strong> enforces strict rate limits (e.g., maximum 3°C shift per tick) and clamps any runaway set-point proposals.</p>
@@ -615,7 +640,42 @@ flowchart LR
     </article>
     <script type="module">
       import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-      mermaid.initialize({ startOnLoad: true, theme: 'dark', themeVariables: { fontFamily: 'IBM Plex Sans' } });
+
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: 'base',
+        themeVariables: {
+          darkMode: true,
+          background: '#121820',
+          primaryColor: '#1a222b',
+          primaryBorderColor: '#313d47',
+          primaryTextColor: '#edf1ef',
+          lineColor: '#5fa8a0',
+          secondaryColor: '#1a222b',
+          tertiaryColor: '#1a222b',
+          clusterBkg: '#161d24',
+          clusterBorder: '#313d47',
+          edgeLabelBackground: '#121820',
+          fontFamily: 'IBM Plex Sans, sans-serif',
+          fontSize: '12px'
+        },
+        flowchart: {
+          useMaxWidth: true,
+          htmlLabels: true,
+          curve: 'basis',
+          nodeSpacing: 28,
+          rankSpacing: 38,
+          padding: 8
+        },
+        sequence: {
+          useMaxWidth: true,
+          boxMargin: 6,
+          actorFontSize: 12,
+          messageFontSize: 11,
+          height: 40,
+          width: 110
+        }
+      });
     </script>
 </main>
 </div>
