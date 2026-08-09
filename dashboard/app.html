@@ -112,41 +112,56 @@
       /* ── TOPBAR ── */
       .topbar {
         border-bottom: 1px solid var(--border-subtle);
-        padding: 0 2.5rem; height: 72px;
-        display: flex; align-items: center; gap: 2rem;
+        padding: 0 2.5rem; height: 64px;
+        display: flex; align-items: center; justify-content: space-between;
       }
 
-      .scrubber-group { display: flex; align-items: center; gap: 1rem; flex: 1; max-width: 400px; }
-      .scrubber-group label { font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.09em; color: var(--text-muted); flex-shrink: 0; }
-      .scrubber-time { font-family: var(--mono); font-size: 1.05rem; color: var(--accent); flex-shrink: 0; min-width: 3.6rem; }
+      .scrubber-group { display: flex; align-items: center; gap: 1.25rem; flex: 1; max-width: 500px; }
+      .time-badge {
+        display: flex; align-items: center; gap: 0.5rem;
+        font-family: var(--mono); font-size: 0.75rem; font-weight: 500; color: var(--text-muted);
+        background: var(--bg-raised); border: 1px solid var(--border-default);
+        padding: 0.35rem 0.6rem; border-radius: var(--radius);
+      }
+      .time-badge span { color: var(--text-primary); font-size: 0.85rem; font-weight: 600; }
 
       input[type="range"] {
-        -webkit-appearance: none; flex: 1; height: 4px;
+        -webkit-appearance: none; flex: 1; height: 2px;
         background: var(--border-default); outline: none; cursor: pointer;
       }
       input[type="range"]::-webkit-slider-thumb {
-        -webkit-appearance: none; width: 18px; height: 18px;
-        border-radius: 50%; background: var(--accent); cursor: grab;
+        -webkit-appearance: none; width: 10px; height: 10px;
+        border-radius: 50%; background: var(--text-primary); cursor: pointer;
         transition: transform 0.1s;
       }
-      input[type="range"]::-webkit-slider-thumb:active { transform: scale(1.4); }
+      input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.4); }
 
-      .topbar-actions { display: flex; align-items: center; gap: 1.25rem; margin-left: auto; }
-      
-      .auto-status-indicator { font-size: 0.9rem; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem; }
+      .playback-controls { display: flex; align-items: center; gap: 1.5rem; }
 
-      .btn {
-        font-family: var(--font); font-size: 0.9rem; font-weight: 500;
-        border-radius: var(--radius-sm); cursor: pointer;
-        transition: background 0.15s, border-color 0.15s, color 0.15s;
-        white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem;
-        border: 1px solid; padding: 0.45rem 1rem; letter-spacing: 0.01em; width: 160px;
+      .status-pill {
+        display: flex; align-items: center; gap: 0.5rem;
+        font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.05em; color: var(--text-muted);
       }
-      .btn-primary { background: var(--text-primary); color: #0A0A0A; border-color: var(--text-primary); }
-      .btn-primary:hover { background: var(--accent); border-color: var(--accent); }
-      .btn-primary:disabled { background: var(--bg-overlay); color: var(--text-muted); border-color: var(--border-default); cursor: not-allowed; }
-      .btn-secondary { background: transparent; color: var(--text-secondary); border-color: var(--border-default); }
-      .btn-secondary:hover { border-color: var(--border-strong); color: var(--text-primary); }
+      .status-pill.is-running { color: var(--accent); }
+      .status-pill.is-running .status-dot { background: var(--accent); animation: pulse-dot 2.4s infinite; }
+
+      .control-group {
+        display: flex; align-items: center;
+        border: 1px solid var(--border-default);
+        border-radius: var(--radius);
+        overflow: hidden;
+      }
+      .icon-btn {
+        background: var(--bg-raised); border: none; border-right: 1px solid var(--border-default);
+        color: var(--text-muted); padding: 0.45rem 1rem; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: all 0.15s ease;
+      }
+      .icon-btn:last-child { border-right: none; }
+      .icon-btn:hover:not(:disabled) { background: var(--bg-elevated); color: var(--text-primary); }
+      .icon-btn.play:hover:not(:disabled) { color: var(--accent); }
+      .icon-btn.stop:hover:not(:disabled) { color: var(--error); }
+      .icon-btn:disabled { opacity: 0.5; cursor: not-allowed; }
       
       .btn-ghost { background: transparent; color: var(--text-muted); border-color: transparent; width: auto; padding: 0.35rem 0.5rem; }
       .btn-ghost:hover { color: var(--text-secondary); }
@@ -409,27 +424,26 @@
   <!-- ── TOPBAR ── -->
   <div class="topbar">
     <div class="scrubber-group">
-      <label>Tick</label>
-      <span class="scrubber-time" id="scrubber-time">00:00</span>
+      <div class="time-badge">TICK <span id="scrubber-time">00:00</span></div>
       <input type="range" id="scrubber" min="0" max="47" value="0">
     </div>
     
-    <div class="topbar-actions">
-      <audio id="voiceover-audio" src="voiceover.mp3" controls style="height: 30px; margin-right: 1rem; display: none; border-radius: var(--radius-sm);"></audio>
-
-      <div class="auto-status-indicator">
-        AUTO 
-        <span id="auto-status-text" style="color: var(--text-secondary)">● STOPPED</span>
+    <div class="playback-controls">
+      <audio id="voiceover-audio" src="voiceover.mp3" controls style="height: 30px; display: none; border-radius: var(--radius);"></audio>
+      
+      <div class="status-pill" id="auto-status-indicator">
+        <span class="status-dot" id="auto-status-dot" style="background: var(--text-muted);"></span> <span id="auto-status-text">STOPPED</span>
       </div>
       
-      <button class="btn btn-ghost" onclick="advanceTickManual()">Next Tick</button>
-      
-      <div style="display: flex; flex-direction: column; gap: 0.3rem;">
-        <button class="btn btn-primary" id="btn-run" onclick="startAutoTick()">
-          ▶ Run Next Tick
+      <div class="control-group">
+        <button class="icon-btn" onclick="advanceTickManual()" title="Step Forward">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
-        <button class="btn btn-secondary" id="btn-stop" onclick="stopAutoTick()">
-          ■ Stop Tick
+        <button class="icon-btn play" id="btn-run" onclick="startAutoTick()" title="Auto Play">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+        </button>
+        <button class="icon-btn stop" id="btn-stop" onclick="stopAutoTick()" title="Stop">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12"></rect></svg>
         </button>
       </div>
     </div>
@@ -826,12 +840,13 @@
     }
 
     /* ── AUTO-PROGRESSION & CONTROLS ── */
-    function startAutoTick() {
-      if (isRunningTick) return;
+    async function startAutoTick() {
+      if (isAutoMode) return;
       isAutoMode = true;
       autoStopRequested = false;
-      document.getElementById('auto-status-text').innerHTML = '● RUNNING';
-      document.getElementById('auto-status-text').style.color = 'var(--success)';
+      document.getElementById('auto-status-indicator').classList.add('is-running');
+      document.getElementById('auto-status-text').textContent = 'RUNNING';
+      document.getElementById('auto-status-dot').style.background = ''; // use CSS class
       runWorkflowLoop();
     }
 
@@ -850,15 +865,17 @@
         
         if (autoStopRequested || !isAutoMode) {
           isAutoMode = false;
-          document.getElementById('auto-status-text').textContent = '● STOPPED';
-          document.getElementById('auto-status-text').style.color = 'var(--text-secondary)';
+          document.getElementById('auto-status-indicator').classList.remove('is-running');
+          document.getElementById('auto-status-text').textContent = 'STOPPED';
+          document.getElementById('auto-status-dot').style.background = 'var(--text-muted)';
           break;
         }
 
         if (currentTick >= DATA.ticks.length - 1) {
-          document.getElementById('auto-status-text').textContent = '✓ COMPLETE';
-          document.getElementById('auto-status-text').style.color = 'var(--success)';
           isAutoMode = false;
+          document.getElementById('auto-status-indicator').classList.remove('is-running');
+          document.getElementById('auto-status-text').textContent = 'COMPLETE';
+          document.getElementById('auto-status-dot').style.background = 'var(--success)';
           break;
         }
 
