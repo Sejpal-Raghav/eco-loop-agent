@@ -154,12 +154,16 @@
       .icon-btn {
         background: var(--bg-raised); border: none; border-right: 1px solid var(--border-default);
         color: var(--text-muted); padding: 0.45rem 1rem; cursor: pointer;
-        display: flex; align-items: center; justify-content: center;
+        display: flex; align-items: center; justify-content: center; gap: 0.45rem;
+        font-family: var(--font); font-size: 0.82rem; font-weight: 600;
         transition: all 0.15s ease;
       }
       .icon-btn:last-child { border-right: none; }
       .icon-btn:hover:not(:disabled) { background: var(--bg-elevated); color: var(--text-primary); }
-      .icon-btn.play:hover:not(:disabled) { color: var(--accent); }
+      
+      .icon-btn.play-btn { background: var(--accent); color: var(--accent-ink); }
+      .icon-btn.play-btn:hover:not(:disabled) { background: var(--accent-dim); color: var(--accent-ink); }
+      
       .icon-btn.stop:hover:not(:disabled) { color: var(--error); }
       .icon-btn:disabled { opacity: 0.5; cursor: not-allowed; }
       
@@ -438,12 +442,15 @@
       <div class="control-group">
         <button class="icon-btn" onclick="advanceTickManual()" title="Step Forward">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          Step
         </button>
-        <button class="icon-btn play" id="btn-run" onclick="startAutoTick()" title="Auto Play">
+        <button class="icon-btn play-btn" id="btn-run" onclick="startAutoTick()" title="Auto Play">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          Auto Play
         </button>
         <button class="icon-btn stop" id="btn-stop" onclick="stopAutoTick()" title="Stop">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12"></rect></svg>
+          Stop
         </button>
       </div>
     </div>
