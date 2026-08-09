@@ -618,6 +618,57 @@
       }
     </style>
     
+        <style>
+      .blog-article {
+        max-width: 920px;
+        margin: 0 auto;
+        padding: 4rem 0 6rem;
+      }
+      .blog-article h1 {
+        font-size: clamp(2rem, 3.5vw, 2.8rem);
+        line-height: 1.15;
+        letter-spacing: -0.02em;
+        margin-bottom: 2.5rem;
+      }
+      .blog-article h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 3.5rem 0 1.5rem;
+        letter-spacing: -0.01em;
+        color: var(--text);
+      }
+      .blog-article h3 {
+        font-size: 1.15rem;
+        font-weight: 600;
+        margin: 2.5rem 0 1rem;
+        color: var(--text);
+      }
+      .blog-article p {
+        font-size: 1.05rem;
+        line-height: 1.75;
+        color: var(--text-muted);
+        margin-bottom: 1.5rem;
+        max-width: 80ch;
+      }
+      .blog-article strong {
+        color: var(--text);
+        font-weight: 600;
+      }
+      .blog-article .mermaid-wrapper {
+        margin: 3.5rem 0;
+        padding: 2.5rem 1.5rem;
+        background: var(--bg-raised);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        overflow-x: auto;
+        text-align: center;
+      }
+      .blog-article .mermaid svg {
+        max-width: 100% !important;
+        height: auto !important;
+      }
+    </style>
+    
     <article class="blog-article">
       <span class="eyebrow" style="font-family:var(--font-mono); font-size:0.75rem; letter-spacing:0.1em; color:var(--accent); text-transform:uppercase; display:block; margin-bottom:1rem;">Architecture Deep Dive</span>
       <h1>Eco-Loop: Solving the 40% Global Energy Problem with Cognitive Buildings</h1>

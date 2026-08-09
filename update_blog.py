@@ -45,14 +45,9 @@ new_html = """    <style>
         overflow-x: auto;
         text-align: center;
       }
-      .blog-article .mermaid {
-        width: 100%;
-        min-width: 700px;
-      }
       .blog-article .mermaid svg {
-        width: 100% !important;
+        max-width: 100% !important;
         height: auto !important;
-        max-width: none !important;
       }
     </style>
     
